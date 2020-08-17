@@ -103,6 +103,34 @@ function createWeatherQuery(type) {
     });
 }
 
+function getForecastIndex(forecastTime) {
+    for (let i=0; i < hourlyData.hourlyForecasts.forecastLocation.forecast.length; i++) {
+        if (hourlyData.hourlyForecasts.forecastLocation.forecast[i].localTime === forecastTime) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+function parseLocalTime(utcTime) {
+    const rawDate = utcTime.substring(0, utcTime.indexOf('T'));
+    const dateArray = rawDate.split('-');
+    return `${dateArray[1]}${dateArray[2]}${dateArray[0]}`;
+}
+
+function getForecast(hour, utcTime) {
+    console.log('getForecast called')
+    const forecastDate = parseLocalTime(utcTime);
+    const forecastTime = `${hour}${forecastDate}`;
+    const forecastIndex = getForecastIndex(forecastTime);
+    if (forecastIndex === -1) {
+        return 'No Forecast data available'
+    }
+    else {
+        return [hourlyData.hourlyForecasts.forecastLocation.forecast[forecastIndex-1], hourlyData.hourlyForecasts.forecastLocation.forecast[forecastIndex], hourlyData.hourlyForecasts.forecastLocation.forecast[forecastIndex+1]];
+    }
+}
+
 function getHour(time) {
     let hour = time.substring(0, time.indexOf(':'));
     if (time.charAt(time.length - 2) === 'A') {
@@ -195,6 +223,19 @@ function calcBH(time) {
     return `${hour}${min}${aOrP}M`;
 }
 
+function createForecast(fcast) {
+    console.log('createForecast called')
+    if (fcast === 'No Forecast data available') {
+        return `<li>${fcast}</li>`;
+    }
+    let forecastHTML = '';
+    for (let i=0; i < fcast.length; i++) {
+        const iconFilename = fcast[i].iconLink.substring(fcast[i].iconLink.lastIndexOf('/')+1);
+        forecastHTML += `<li>${fcast[i].description} Temp: ${fcast[i].temperature}&deg;. Wind ${fcast[i].windDescShort} at ${fcast[i].windSpeed} mph. Chance of precipitation: ${fcast[i].precipitationProbability}% <img src="./images/weather-icons/${iconFilename}" alt="${fcast[i].iconName}"></li>`;
+    }
+    return forecastHTML;
+}
+
 function displayHours(hoursHTML) {
     $('.js-results').append(hoursHTML);
     $('.js-results, .js-button-container, #js-loc-refine').removeClass('hidden');
@@ -215,7 +256,15 @@ function makeGH(day = 0) {
     const goldenHourPM = calcGH(sunset);
     const blueHourAM = calcBH(sunrise);
     const blueHourPM = calcBH(sunset);
-    const hoursHTML = `<h3>${date}</h3><ul><li>Morning<ul><li>Blue Hour ${blueHourAM} to ${sunrise}</li><li>Golden Hour ${sunrise} to ${goldenHourAM}</li></ul></li><li>Evening<ul><li>Golden Hour ${goldenHourPM} to ${sunset}</li><li>Blue Hour ${sunset} to ${blueHourPM}</li></ul</li></ul>`;
+    const sunriseForecast = getForecast(sunriseHour, utcTime);
+    const sunsetForecast = getForecast(sunsetHour, utcTime);
+    console.log(sunriseForecast);
+    console.log(sunsetForecast);
+    const sunriseHTML = createForecast(sunriseForecast);
+    const sunsetHTML = createForecast(sunsetForecast);
+    console.log(sunriseHTML);
+    console.log(sunsetHTML);
+    const hoursHTML = `<h3>${date}</h3><ul><li>Morning<ul><li>Blue Hour ${blueHourAM} to ${sunrise}</li><li>Golden Hour ${sunrise} to ${goldenHourAM}</li><li>Forecast for Blue/Sunrise/Golden window<ul>${sunriseHTML}</ul></li></ul></li><li>Evening<ul><li>Golden Hour ${goldenHourPM} to ${sunset}</li><li>Blue Hour ${sunset} to ${blueHourPM}</li><li>Forecast for Golden/Sunset/Blue window<ul>${sunsetHTML}</ul></li></ul</li></ul>`;
     displayHours(hoursHTML);
 }
 
