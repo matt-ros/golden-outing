@@ -5,3 +5,14 @@
 .hidden {
     display: none;
 }
+
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    text-align: center;
+}
+
+.results, .rest-list, .hotel-list {
+    width: max-content;
+    text-align: left;
+    margin: auto;
+}

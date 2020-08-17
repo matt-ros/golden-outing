@@ -2,7 +2,7 @@
 
 const key = 'pFfcXSfgYVfQMIMhlBxuDMZaFrbBSxDBfrF3SToyMYY'; 
 const weatherBase = 'https://weather.ls.hereapi.com/weather/1.0/report.json';
-const searchBase = 'https://discover.search.hereapi.com/v1/discover';
+const searchBase = 'https://browse.search.hereapi.com/v1/browse';
 const geoBase = 'https://geocode.search.hereapi.com/v1/geocode';
 let geoData = null;
 let astronomyData = null;
@@ -15,6 +15,42 @@ function formatQueryParams(params) {
     const queryItems = Object.keys(params)
       .map(key => `${encodeURIComponent(key)}=${encodeURIComponent(params[key])}`)
     return queryItems.join('&');
+}
+
+function createSearchQuery(categoryId) {
+    const params = {
+        apiKey: key,
+        categories: categoryId,
+        at: `${geoData.items[0].position.lat},${geoData.items[0].position.lng}`,
+        limit: 10,
+        lang: 'en-US'
+    }
+    const queryString = formatQueryParams(params);
+    const searchUrl = searchBase + '?' + queryString;
+
+    fetch(searchUrl)
+    .then(response => {
+        if (response.ok) {
+            return response.json();
+        }
+        throw new Error(response.statusText);
+    })
+    .then(responseJson => {
+        if (categoryId === '100-1000') {
+            restData = responseJson;
+            console.log(restData);
+            makeRestList();
+        }
+        if (categoryId === '500') {
+            hotelData = responseJson;
+            console.log(hotelData);
+            makeHotelList();
+        }
+
+    })
+    .catch(error => {
+        $('#js-error-message').text(`Something went wrong: ${error.message}`)
+    });
 }
 
 function createGeoQuery(loc) {
@@ -101,6 +137,38 @@ function createWeatherQuery(type) {
     .catch(error => {
         $('#js-error-message').text(`Something went wrong: ${error.message}`)
     });
+}
+
+function displayRestList(restListHTML) {
+    console.log('displayRestList called')
+    $('.js-rest-list').html(restListHTML).removeClass('hidden');
+}
+
+function displayHotelList(hotelListHTML) {
+    console.log('displayHotelList called')
+    $('.js-hotel-list').html(hotelListHTML).removeClass('hidden');
+}
+
+function makeRestList() {
+    console.log('makeRestList called');
+    let restListHTML = '<h3>Nearest Restaurants</h3><ol>'
+    for (let i=0; i < restData.items.length; i++) {
+        console.log(`cycle ${i+1}`);
+        restListHTML += `<li>${restData.items[i].address.label}</li><br>`
+    }
+    restListHTML += '</ol>';
+    console.log(restListHTML);
+    displayRestList(restListHTML);
+}
+
+function makeHotelList() {
+    console.log('makeHotelList called');
+    let hotelListHTML = '<h3>Nearest Hotels</h3><ol>';
+    for (let i=0; i < hotelData.items.length; i++) {
+        hotelListHTML += `<li>${hotelData.items[i].address.label}</li><br>`
+    }
+    hotelListHTML += '</ol>';
+    displayHotelList(hotelListHTML);
 }
 
 function getForecastIndex(forecastTime) {
@@ -258,12 +326,12 @@ function makeGH(day = 0) {
     const blueHourPM = calcBH(sunset);
     const sunriseForecast = getForecast(sunriseHour, utcTime);
     const sunsetForecast = getForecast(sunsetHour, utcTime);
-    console.log(sunriseForecast);
-    console.log(sunsetForecast);
+    //console.log(sunriseForecast);
+    //console.log(sunsetForecast);
     const sunriseHTML = createForecast(sunriseForecast);
     const sunsetHTML = createForecast(sunsetForecast);
-    console.log(sunriseHTML);
-    console.log(sunsetHTML);
+    //console.log(sunriseHTML);
+    //console.log(sunsetHTML);
     const hoursHTML = `<h3>${date}</h3><ul><li>Morning<ul><li>Blue Hour ${blueHourAM} to ${sunrise}</li><li>Golden Hour ${sunrise} to ${goldenHourAM}</li><li>Forecast for Blue/Sunrise/Golden window<ul>${sunriseHTML}</ul></li></ul></li><li>Evening<ul><li>Golden Hour ${goldenHourPM} to ${sunset}</li><li>Blue Hour ${sunset} to ${blueHourPM}</li><li>Forecast for Golden/Sunset/Blue window<ul>${sunsetHTML}</ul></li></ul</li></ul>`;
     displayHours(hoursHTML);
 }
@@ -275,7 +343,9 @@ function watchNewLoc() {
         geoData = null;
         astronomyData = null;
         hourlyData = null;
-        $('.js-results').empty();
+        restData = null;
+        hotelData = null;
+        $('.js-results, .js-rest-list, .js-hotel-list').empty();
         const location = $('#js-location').val();
         createGeoWeatherQuery(location);
     });
@@ -288,21 +358,32 @@ function watch7Days() {
         for (let i=1; i < astronomyData.astronomy.astronomy.length; i++) {
             makeGH(i);
         }
-    })
+    });
 }
 
 function watchRefineLoc() {
     console.log('watchRefineLoc called');
 }
 
-function watchPlaces() {
-    console.log('watchPlaces called');
+function watchRestaurants() {
+    $('.js-button-container').on('click', '#js-rest-button', event => {
+        console.log('watchRestaurants called');
+        createSearchQuery('100-1000');
+    });
+}
+
+function watchHotels() {
+    $('.js-button-container').on('click', '#js-hotel-button', event => {
+        console.log('watchHotels called');
+        createSearchQuery('500');
+    });
 }
 
 function handleApp() {
     watchNewLoc();
     watchRefineLoc();
-    watchPlaces();
+    watchRestaurants();
+    watchHotels();
     watch7Days();
 }
 
