@@ -305,6 +305,9 @@ function createForecast(fcast) {
 }
 
 function displayHours(hoursHTML) {
+    if ($('.js-results').text().length === 0) {
+        $('.js-results').append(`<h2>Displaying results for ${geoData.items[0].address.label}`);
+    }
     $('.js-results').append(hoursHTML);
     $('.js-results, .js-button-container, #js-loc-refine').removeClass('hidden');
 }
@@ -345,7 +348,7 @@ function watchNewLoc() {
         hourlyData = null;
         restData = null;
         hotelData = null;
-        $('.js-results, .js-rest-list, .js-hotel-list').empty();
+        $('.js-results, .js-rest-list, .js-hotel-list').empty().addClass('hidden');
         const location = $('#js-location').val();
         createGeoWeatherQuery(location);
     });
