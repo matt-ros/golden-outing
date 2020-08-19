@@ -7,7 +7,7 @@ const geoBase = 'https://geocode.search.hereapi.com/v1/geocode';
 let geoData = null;
 let astronomyData = null;
 let hourlyData = null;
-let searchData = null;
+let currentConditions = null;
 let restData = null;
 let hotelData = null;
 
@@ -15,6 +15,60 @@ function formatQueryParams(params) {
     const queryItems = Object.keys(params)
       .map(key => `${encodeURIComponent(key)}=${encodeURIComponent(params[key])}`)
     return queryItems.join('&');
+}
+
+function createWeatherGeoQuery(loc) {
+    const params = {
+        apiKey: key,
+        name: loc,
+        metric: false,
+        product: 'forecast_astronomy'
+    }
+    const queryString = formatQueryParams(params);
+    const weatherUrl = weatherBase + '?' + queryString;
+
+    fetch(weatherUrl)
+        .then(response => {
+            if (response.ok) {
+                return response.json();
+            }
+            throw new Error(response.statusText);
+        })
+        .then(responseJson => {
+            astronomyData = responseJson;
+            const coord = `${astronomyData.astronomy.latitude},${astronomyData.astronomy.longitude}`;
+            createGeoFromWeather(loc, coord);
+        })
+        .catch(error => {
+            $('#js-error-message').text(`Something went wrong: ${error.message}`)
+        });
+}
+
+function createGeoFromWeather(loc, coord) {
+    const params = {
+        apiKey: key,
+        q: loc,
+        at: coord,
+        lang: 'en-US'
+    }
+    const queryString = formatQueryParams(params);
+    const geoUrl = geoBase + '?' + queryString;
+
+    fetch(geoUrl)
+        .then(response => {
+            if (response.ok) {
+                return response.json();
+            }
+            throw new Error(response.statusText);
+        })
+        .then(responseJson => {
+            geoData = responseJson;
+            createWeatherQuery('hourly');
+            createWeatherQuery('observation');
+        })
+        .catch(error => {
+            $('#js-error-message').text(`Something went wrong: ${error.message}`)
+        });
 }
 
 function createSearchQuery(categoryId) {
@@ -56,7 +110,8 @@ function createSearchQuery(categoryId) {
 function createGeoQuery(loc) {
     const params = {
         apiKey: key,
-        q: loc
+        q: loc,
+        lang: 'en-US'
     }
     const queryString = formatQueryParams(params);
     const geoUrl = geoBase + '?' + queryString;
@@ -80,7 +135,8 @@ function createGeoQuery(loc) {
 function createGeoWeatherQuery(loc) {
     const params = {
         apiKey: key,
-        q: loc
+        q: loc,
+        lang: 'en-US'
     }
     const queryString = formatQueryParams(params);
     const geoUrl = geoBase + '?' + queryString;
@@ -97,9 +153,10 @@ function createGeoWeatherQuery(loc) {
             //console.log(geoData);
             createWeatherQuery('astronomy');
             createWeatherQuery('hourly');
+            createWeatherQuery('observation');
         })
         .catch(error => {
-            $('#js-error-message').text(`Something went wrong: ${error.message}`)
+            $('#js-error-message').text(`GeoWeather threw an error: ${error.message}`)
         });
 }
 
@@ -110,6 +167,10 @@ function createWeatherQuery(type) {
         longitude: geoData.items[0].position.lng,
         product: `forecast_${type}`,
         metric: false
+    }
+    if (type === 'observation') {
+        params.product = `${type}`;
+        params.oneobservation = true;
     }
     const queryString = formatQueryParams(params);
     const weatherUrl = weatherBase + '?' + queryString;
@@ -130,34 +191,37 @@ function createWeatherQuery(type) {
             hourlyData = responseJson;
             //console.log(hourlyData);
         }
-        if (astronomyData !== null && hourlyData !== null) {
+        if (type === 'observation') {
+            currentConditions = responseJson;
+        }
+        if (astronomyData !== null && hourlyData !== null && currentConditions !== null) {
             makeGH();
         }
     })
     .catch(error => {
-        $('#js-error-message').text(`Something went wrong: ${error.message}`)
+        $('#js-error-message').text(`Weather threw an error: ${error.message}`)
     });
 }
 
 function displayRestList(restListHTML) {
     console.log('displayRestList called')
-    $('.js-rest-list').html(restListHTML).removeClass('hidden');
+    $('.js-rest-list').html(restListHTML);
 }
 
 function displayHotelList(hotelListHTML) {
     console.log('displayHotelList called')
-    $('.js-hotel-list').html(hotelListHTML).removeClass('hidden');
+    $('.js-hotel-list').html(hotelListHTML);
 }
 
 function makeRestList() {
     console.log('makeRestList called');
     let restListHTML = '<h3>Nearest Restaurants</h3><ol>'
     for (let i=0; i < restData.items.length; i++) {
-        console.log(`cycle ${i+1}`);
-        restListHTML += `<li>${restData.items[i].address.label}</li><br>`
+        //console.log(`cycle ${i+1}`);
+        restListHTML += `<li><a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(restData.items[i].address.label)}" target="_blank">${restData.items[i].address.label}</a></li><br>`
     }
     restListHTML += '</ol>';
-    console.log(restListHTML);
+    //console.log(restListHTML);
     displayRestList(restListHTML);
 }
 
@@ -165,7 +229,7 @@ function makeHotelList() {
     console.log('makeHotelList called');
     let hotelListHTML = '<h3>Nearest Hotels</h3><ol>';
     for (let i=0; i < hotelData.items.length; i++) {
-        hotelListHTML += `<li>${hotelData.items[i].address.label}</li><br>`
+        hotelListHTML += `<li><a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(hotelData.items[i].address.label)}" target="_blank">${hotelData.items[i].address.label}</a></li><br>`
     }
     hotelListHTML += '</ol>';
     displayHotelList(hotelListHTML);
@@ -306,10 +370,11 @@ function createForecast(fcast) {
 
 function displayHours(hoursHTML) {
     if ($('.js-results').text().length === 0) {
-        $('.js-results').append(`<h2>Displaying results for ${geoData.items[0].address.label}`);
+        $('.js-results-loc').html(`<h2>Displaying results for ${geoData.items[0].address.label}</h2>`).removeClass('hidden');
     }
     $('.js-results').append(hoursHTML);
     $('.js-results, .js-button-container, #js-loc-refine').removeClass('hidden');
+    console.log(currentConditions);
 }
 
 function makeGH(day = 0) {
@@ -335,7 +400,7 @@ function makeGH(day = 0) {
     const sunsetHTML = createForecast(sunsetForecast);
     //console.log(sunriseHTML);
     //console.log(sunsetHTML);
-    const hoursHTML = `<h3>${date}</h3><ul><li>Morning<ul><li>Blue Hour ${blueHourAM} to ${sunrise}</li><li>Golden Hour ${sunrise} to ${goldenHourAM}</li><li>Forecast for Blue/Sunrise/Golden window<ul>${sunriseHTML}</ul></li></ul></li><li>Evening<ul><li>Golden Hour ${goldenHourPM} to ${sunset}</li><li>Blue Hour ${sunset} to ${blueHourPM}</li><li>Forecast for Golden/Sunset/Blue window<ul>${sunsetHTML}</ul></li></ul</li></ul>`;
+    const hoursHTML = `<h3>${date}</h3><ul><li>Morning<ul><li>Blue Hour ${blueHourAM} to ${sunrise}</li><li>Sunrise ${sunrise}</li><li>Golden Hour ${sunrise} to ${goldenHourAM}</li><li>Forecast for Blue/Sunrise/Golden window<ul>${sunriseHTML}</ul></li></ul></li><li>Evening<ul><li>Golden Hour ${goldenHourPM} to ${sunset}</li><li>Sunset ${sunset}</li><li>Blue Hour ${sunset} to ${blueHourPM}</li><li>Forecast for Golden/Sunset/Blue window<ul>${sunsetHTML}</ul></li></ul</li></ul>`;
     displayHours(hoursHTML);
 }
 
@@ -348,9 +413,15 @@ function watchNewLoc() {
         hourlyData = null;
         restData = null;
         hotelData = null;
-        $('.js-results, .js-rest-list, .js-hotel-list').empty().addClass('hidden');
+        $('.js-results, .js-results-loc, .js-rest-list, .js-hotel-list').empty().addClass('hidden');
+        $('#js-7day-button').removeAttr('disabled');
         const location = $('#js-location').val();
-        createGeoWeatherQuery(location);
+        if (location.length === 5 && $.isNumeric(location)) {
+            createWeatherGeoQuery(location);
+        }
+        else {
+            createGeoWeatherQuery(location);
+        }
     });
 }
 
@@ -358,6 +429,7 @@ function watch7Days() {
     $('.button-container').on('click', '#js-7day-button', event => {
         console.log('watch7Days called');
         event.preventDefault();
+        $('#js-7day-button').attr('disabled', true);
         for (let i=1; i < astronomyData.astronomy.astronomy.length; i++) {
             makeGH(i);
         }
@@ -371,14 +443,20 @@ function watchRefineLoc() {
 function watchRestaurants() {
     $('.js-button-container').on('click', '#js-rest-button', event => {
         console.log('watchRestaurants called');
-        createSearchQuery('100-1000');
+        if ($('.js-rest-list').text().length === 0) {
+            createSearchQuery('100-1000');
+        }
+        $('.js-rest-list').toggleClass('hidden');
     });
 }
 
 function watchHotels() {
     $('.js-button-container').on('click', '#js-hotel-button', event => {
         console.log('watchHotels called');
-        createSearchQuery('500');
+        if ($('.js-hotel-list').text().length === 0) {
+            createSearchQuery('500');
+        }
+        $('.js-hotel-list').toggleClass('hidden');
     });
 }
 

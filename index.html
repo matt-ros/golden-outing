@@ -21,15 +21,16 @@
             <input type="submit" name="loc-submit" id="js-loc-submit" value="Go!">
         </form>
     </div>
-    <section class="results js-results hidden">
-    </section>
+    <div id="js-error-message"></div>
     <div class="button-container js-button-container hidden">
-        <button type="button" name="rest-button" id="js-rest-button">Show<br>Restaurants</button>
+        <button type="button" name="rest-button" id="js-rest-button">Show/Hide<br>Restaurants</button>
         <button type="button" name="7day-button" id="js-7day-button">Show<br>7 Day Forecast</button>
-        <button type="button" name="hotel-button" id="js-hotel-button">Show<br>Hotels</button>
+        <button type="button" name="hotel-button" id="js-hotel-button">Show/Hide<br>Hotels</button>
     </div>
+    <div class="results-loc js-results-loc"></div>
     <section class="rest-list js-rest-list hidden"></section>
     <section class="hotel-list js-hotel-list hidden"></section>
+    <section class="results js-results hidden"></section>
 
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script src="index.js"></script>
