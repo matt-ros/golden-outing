@@ -1,13 +1,15 @@
 'use strict';
 
-const key = 'pFfcXSfgYVfQMIMhlBxuDMZaFrbBSxDBfrF3SToyMYY'; 
+const key = 'pFfcXSfgYVfQMIMhlBxuDMZaFrbBSxDBfrF3SToyMYY';
+const gKey = 'AIzaSyC_oOddO8wOobo7U9amQ5RJlm6z9UDwIE0'; 
 const weatherBase = 'https://weather.ls.hereapi.com/weather/1.0/report.json';
 const searchBase = 'https://browse.search.hereapi.com/v1/browse';
 const geoBase = 'https://geocode.search.hereapi.com/v1/geocode';
+const mapBase = 'https://www.google.com/maps/embed/v1/place';
 let geoData = null;
 let astronomyData = null;
 let hourlyData = null;
-let currentConditions = null;
+let currentConditionsData = null;
 let restData = null;
 let hotelData = null;
 
@@ -40,7 +42,7 @@ function createWeatherGeoQuery(loc) {
             createGeoFromWeather(loc, coord);
         })
         .catch(error => {
-            $('#js-error-message').text(`Something went wrong: ${error.message}`)
+            $('#js-error-message').text(`Something went wrong: ${error.message}`).removeClass('hidden')
         });
 }
 
@@ -67,17 +69,22 @@ function createGeoFromWeather(loc, coord) {
             createWeatherQuery('observation');
         })
         .catch(error => {
-            $('#js-error-message').text(`Something went wrong: ${error.message}`)
+            $('#js-error-message').text(`Something went wrong: ${error.message}`).removeClass('hidden')
         });
 }
 
-function createSearchQuery(categoryId) {
+function createSearchQuery(category) {
     const params = {
         apiKey: key,
-        categories: categoryId,
         at: `${geoData.items[0].position.lat},${geoData.items[0].position.lng}`,
         limit: 10,
         lang: 'en-US'
+    }
+    if (category === 'restaurant') {
+        params.categories = '100-1000'
+    }
+    if (category === 'hotel') {
+        params.categories = '500-5000,500-5100-0057,500-5100-0058'
     }
     const queryString = formatQueryParams(params);
     const searchUrl = searchBase + '?' + queryString;
@@ -90,12 +97,12 @@ function createSearchQuery(categoryId) {
         throw new Error(response.statusText);
     })
     .then(responseJson => {
-        if (categoryId === '100-1000') {
+        if (category === 'restaurant') {
             restData = responseJson;
             console.log(restData);
             makeRestList();
         }
-        if (categoryId === '500') {
+        if (category === 'hotel') {
             hotelData = responseJson;
             console.log(hotelData);
             makeHotelList();
@@ -103,7 +110,7 @@ function createSearchQuery(categoryId) {
 
     })
     .catch(error => {
-        $('#js-error-message').text(`Something went wrong: ${error.message}`)
+        $('#js-error-message').text(`Something went wrong: ${error.message}`).removeClass('hidden')
     });
 }
 
@@ -128,7 +135,7 @@ function createGeoQuery(loc) {
             //console.log(geoData);
         })
         .catch(error => {
-            $('#js-error-message').text(`Something went wrong: ${error.message}`)
+            $('#js-error-message').text(`Something went wrong: ${error.message}`).removeClass('hidden')
         });
 }
 
@@ -156,7 +163,7 @@ function createGeoWeatherQuery(loc) {
             createWeatherQuery('observation');
         })
         .catch(error => {
-            $('#js-error-message').text(`GeoWeather threw an error: ${error.message}`)
+            $('#js-error-message').text(`GeoWeather threw an error: ${error.message}`).removeClass('hidden')
         });
 }
 
@@ -192,15 +199,28 @@ function createWeatherQuery(type) {
             //console.log(hourlyData);
         }
         if (type === 'observation') {
-            currentConditions = responseJson;
+            currentConditionsData = responseJson;
         }
-        if (astronomyData !== null && hourlyData !== null && currentConditions !== null) {
+        if (astronomyData !== null && hourlyData !== null && currentConditionsData !== null) {
             makeGH();
         }
     })
     .catch(error => {
-        $('#js-error-message').text(`Weather threw an error: ${error.message}`)
+        $('#js-error-message').text(`Weather threw an error: ${error.message}`).removeClass('hidden')
     });
+}
+
+function makeMap() {
+    const params = {
+        key: gKey,
+        q: geoData.items[0].address.label
+    }
+    if (geoData.items[0].resultType === 'locality') {
+        params.q = `${geoData.items[0].position.lat},${geoData.items[0].position.lng}`;
+    }
+    const queryString = formatQueryParams(params);
+    const mapUrl = mapBase + '?' + queryString;
+    return `<iframe width="450" height="250" frameborder="0" style="border:0" src="${mapUrl}" allowfullscreen></iframe>`;
 }
 
 function displayRestList(restListHTML) {
@@ -233,6 +253,12 @@ function makeHotelList() {
     }
     hotelListHTML += '</ol>';
     displayHotelList(hotelListHTML);
+}
+
+function makeCurrentConditions() {
+    const observation = currentConditionsData.observations.location[0].observation[0];
+    const iconFilename = observation.iconLink.substring(observation.iconLink.lastIndexOf('/')+1);
+    return `<p>${observation.description} Temp: ${observation.temperature}&deg;. Wind ${observation.windDescShort} at ${observation.windSpeed} mph. <img src="./images/weather-icons/${iconFilename}" alt="${observation.iconName}">`;
 }
 
 function getForecastIndex(forecastTime) {
@@ -370,11 +396,10 @@ function createForecast(fcast) {
 
 function displayHours(hoursHTML) {
     if ($('.js-results').text().length === 0) {
-        $('.js-results-loc').html(`<h2>Displaying results for ${geoData.items[0].address.label}</h2>`).removeClass('hidden');
+        $('.js-results-loc').html(`<h2>Displaying results for ${geoData.items[0].address.label}</h2>${makeMap()}<h3>Current Conditions</h3>${makeCurrentConditions()}`).removeClass('hidden');
     }
     $('.js-results').append(hoursHTML);
     $('.js-results, .js-button-container, #js-loc-refine').removeClass('hidden');
-    console.log(currentConditions);
 }
 
 function makeGH(day = 0) {
@@ -413,7 +438,7 @@ function watchNewLoc() {
         hourlyData = null;
         restData = null;
         hotelData = null;
-        $('.js-results, .js-results-loc, .js-rest-list, .js-hotel-list').empty().addClass('hidden');
+        $('.js-results, .js-results-loc, .js-rest-list, .js-hotel-list, #js-error-message').empty().addClass('hidden');
         $('#js-7day-button').removeAttr('disabled');
         const location = $('#js-location').val();
         if (location.length === 5 && $.isNumeric(location)) {
@@ -444,7 +469,7 @@ function watchRestaurants() {
     $('.js-button-container').on('click', '#js-rest-button', event => {
         console.log('watchRestaurants called');
         if ($('.js-rest-list').text().length === 0) {
-            createSearchQuery('100-1000');
+            createSearchQuery('restaurant');
         }
         $('.js-rest-list').toggleClass('hidden');
     });
@@ -454,7 +479,7 @@ function watchHotels() {
     $('.js-button-container').on('click', '#js-hotel-button', event => {
         console.log('watchHotels called');
         if ($('.js-hotel-list').text().length === 0) {
-            createSearchQuery('500');
+            createSearchQuery('hotel');
         }
         $('.js-hotel-list').toggleClass('hidden');
     });
