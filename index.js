@@ -220,17 +220,17 @@ function makeMap() {
     }
     const queryString = formatQueryParams(params);
     const mapUrl = mapBase + '?' + queryString;
-    return `<iframe width="450" height="250" frameborder="0" style="border:0" src="${mapUrl}" allowfullscreen></iframe>`;
+    return `<iframe width="800" height="450" frameborder="0" style="border:0" src="${mapUrl}" allowfullscreen></iframe>`;
 }
 
 function displayRestList(restListHTML) {
     console.log('displayRestList called')
-    $('.js-rest-list').html(restListHTML);
+    $('.js-rest-list').html(restListHTML).toggle('slow');
 }
 
 function displayHotelList(hotelListHTML) {
     console.log('displayHotelList called')
-    $('.js-hotel-list').html(hotelListHTML);
+    $('.js-hotel-list').html(hotelListHTML).toggle('slow');
 }
 
 function makeRestList() {
@@ -258,7 +258,7 @@ function makeHotelList() {
 function makeCurrentConditions() {
     const observation = currentConditionsData.observations.location[0].observation[0];
     const iconFilename = observation.iconLink.substring(observation.iconLink.lastIndexOf('/')+1);
-    return `<p>${observation.description} Temp: ${observation.temperature}&deg;. Wind ${observation.windDescShort} at ${observation.windSpeed} mph. <img src="./images/weather-icons/${iconFilename}" alt="${observation.iconName}">`;
+    return `<p>${observation.description} Temp: ${observation.temperature}&deg;F. Wind ${observation.windDescShort} at ${observation.windSpeed} mph.<br><img src="./images/weather-icons/${iconFilename}" alt="${observation.iconName}">`;
 }
 
 function getForecastIndex(forecastTime) {
@@ -389,17 +389,17 @@ function createForecast(fcast) {
     let forecastHTML = '';
     for (let i=0; i < fcast.length; i++) {
         const iconFilename = fcast[i].iconLink.substring(fcast[i].iconLink.lastIndexOf('/')+1);
-        forecastHTML += `<li>${fcast[i].description} Temp: ${fcast[i].temperature}&deg;. Wind ${fcast[i].windDescShort} at ${fcast[i].windSpeed} mph. Chance of precipitation: ${fcast[i].precipitationProbability}% <img src="./images/weather-icons/${iconFilename}" alt="${fcast[i].iconName}"></li>`;
+        forecastHTML += `<li>${fcast[i].description} Temp: ${fcast[i].temperature}&deg;F. Wind ${fcast[i].windDescShort} at ${fcast[i].windSpeed} mph. Chance of precipitation: ${fcast[i].precipitationProbability}%<br><img src="./images/weather-icons/${iconFilename}" alt="${fcast[i].iconName}"></li>`;
     }
     return forecastHTML;
 }
 
 function displayHours(hoursHTML) {
     if ($('.js-results').text().length === 0) {
-        $('.js-results-loc').html(`<h2>Displaying results for ${geoData.items[0].address.label}</h2>${makeMap()}<h3>Current Conditions</h3>${makeCurrentConditions()}`).removeClass('hidden');
+        $('.js-results-loc').html(`<h2>Displaying results for ${geoData.items[0].address.label}</h2>${makeMap()}<h3>Current Conditions</h3>${makeCurrentConditions()}`).show('slow');
     }
     $('.js-results').append(hoursHTML);
-    $('.js-results, .js-button-container, #js-loc-refine').removeClass('hidden');
+    $('.js-results, .js-button-container, #js-loc-refine').show('slow').removeClass('hidden');
 }
 
 function makeGH(day = 0) {
@@ -425,7 +425,39 @@ function makeGH(day = 0) {
     const sunsetHTML = createForecast(sunsetForecast);
     //console.log(sunriseHTML);
     //console.log(sunsetHTML);
-    const hoursHTML = `<h3>${date}</h3><ul><li>Morning<ul><li>Blue Hour ${blueHourAM} to ${sunrise}</li><li>Sunrise ${sunrise}</li><li>Golden Hour ${sunrise} to ${goldenHourAM}</li><li>Forecast for Blue/Sunrise/Golden window<ul>${sunriseHTML}</ul></li></ul></li><li>Evening<ul><li>Golden Hour ${goldenHourPM} to ${sunset}</li><li>Sunset ${sunset}</li><li>Blue Hour ${sunset} to ${blueHourPM}</li><li>Forecast for Golden/Sunset/Blue window<ul>${sunsetHTML}</ul></li></ul</li></ul>`;
+    const hoursHTML = `<div class="day">
+      <h3 class="result-item" id="day-${day}">${date}</h3>
+      <div class="result-item">
+      <ul>
+        <li>Morning
+          <ul>
+            <li>Blue Hour ${blueHourAM} to ${sunrise}</li>
+            <li>Sunrise ${sunrise}</li>
+            <li>Golden Hour ${sunrise} to ${goldenHourAM}</li>
+          </ul>
+        </li>
+        <li>Forecast
+          <ul>${sunriseHTML}
+          </ul>
+        </li>
+      </ul>
+      </div>
+      <div class="result-item">
+        <ul>
+          <li>Evening
+            <ul>
+              <li>Golden Hour ${goldenHourPM} to ${sunset}</li>
+              <li>Sunset ${sunset}</li>
+              <li>Blue Hour ${sunset} to ${blueHourPM}</li>
+            </ul>
+          </li>
+          <li>Forecast
+            <ul>${sunsetHTML}
+            </ul>
+          </li>
+        </ul>
+      </div>
+      </div>`;
     displayHours(hoursHTML);
 }
 
@@ -433,12 +465,14 @@ function watchNewLoc() {
     $('.search-container').on('click', '#js-loc-submit', event => {
         console.log('watchNewLoc called');
         event.preventDefault();
+        $('.title').hide('slow');
+        $('.start-screen').css('margin', '20px auto');
         geoData = null;
         astronomyData = null;
         hourlyData = null;
         restData = null;
         hotelData = null;
-        $('.js-results, .js-results-loc, .js-rest-list, .js-hotel-list, #js-error-message').empty().addClass('hidden');
+        $('.js-results, .js-results-loc, .js-rest-list, .js-hotel-list, #js-error-message').hide('slow').empty();
         $('#js-7day-button').removeAttr('disabled');
         const location = $('#js-location').val();
         if (location.length === 5 && $.isNumeric(location)) {
@@ -458,6 +492,7 @@ function watch7Days() {
         for (let i=1; i < astronomyData.astronomy.astronomy.length; i++) {
             makeGH(i);
         }
+        $('#day-1').get(0).scrollIntoView({behavior: 'smooth'});
     });
 }
 
@@ -471,7 +506,10 @@ function watchRestaurants() {
         if ($('.js-rest-list').text().length === 0) {
             createSearchQuery('restaurant');
         }
-        $('.js-rest-list').toggleClass('hidden');
+        else {
+          $('.js-rest-list').toggle('slow');
+          $('.js-rest-list').get(0).scrollIntoView({behavior: 'smooth'});
+        }
     });
 }
 
@@ -481,7 +519,10 @@ function watchHotels() {
         if ($('.js-hotel-list').text().length === 0) {
             createSearchQuery('hotel');
         }
-        $('.js-hotel-list').toggleClass('hidden');
+        else {
+          $('.js-hotel-list').toggle('slow');
+          $('.js-hotel-list').get(0).scrollIntoView({behavior: 'smooth'})
+        }
     });
 }
 

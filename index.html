@@ -7,27 +7,31 @@
     <title>Golden Outing | Golden and Blue Hour Times and Weather</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css" rel="stylesheet"
         type="text/css" />
-    <link href="https://fonts.googleapis.com/css2?family=Raleway&family=Rock+Salt&display=swap" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Raleway&display=swap" rel="stylesheet">
     <link href="style.css" rel="stylesheet" type="text/css" />
 </head>
 
 <body>
+  <div class="start-screen">
+  <div class="title">
     <h1>Golden Outing</h1>
     <h2>Please enter a location</h2>
+  </div>
     <div class="search-container">
         <form>
-            <input type="text" name="location" id="js-location" placeholder="City, place name, or address">
+            <input type="text" name="location" id="js-location" placeholder="Address, landmark, city, or US ZIP code">
             <!--<button type="button" class="hidden" name="loc-refine" id="js-loc-refine">Refine</button>-->
             <input type="submit" name="loc-submit" id="js-loc-submit" value="Go!">
         </form>
     </div>
-    <div id="js-error-message"></div>
+  </div>
+    <div class="results-loc js-results-loc"></div>
     <div class="button-container js-button-container hidden">
+    <div id="js-error-message"></div>
         <button type="button" name="rest-button" id="js-rest-button">Show/Hide<br>Restaurants</button>
         <button type="button" name="7day-button" id="js-7day-button">Show<br>7 Day Forecast</button>
         <button type="button" name="hotel-button" id="js-hotel-button">Show/Hide<br>Hotels</button>
     </div>
-    <div class="results-loc js-results-loc"></div>
     <section class="rest-list js-rest-list hidden"></section>
     <section class="hotel-list js-hotel-list hidden"></section>
     <section class="results js-results hidden"></section>
