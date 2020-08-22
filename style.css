@@ -10,10 +10,6 @@ html {
     url(./images/background2.jpg) no-repeat center center fixed;
 }
 
-.hidden {
-    display: none;
-}
-
 body {
     font-family: 'Raleway', sans-serif;
     text-align: center;
@@ -25,6 +21,7 @@ body {
     width: 90%;
     text-align: left;
     margin: auto 5%;
+    background: rgba(255,255,255,0.6);
 }
 
 /*.results {
@@ -56,6 +53,21 @@ iframe {
   width: 100%;
 }
 
+button {
+  display: flex;
+  flex-direction: column;
+}
+
+.button-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.hidden {
+  display: none;
+}
+
 @media all and (min-width: 800px) {
   html {
   background: linear-gradient(
@@ -76,7 +88,6 @@ iframe {
     justify-content: space-between;
     width: 100%;
     margin: auto;
-    background: rgba(255,255,255,0.6)
   }
 
   .result-item {
@@ -112,4 +123,17 @@ iframe {
     width: 100%;
   }*/
 
+  .lists {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    width: 90%;
+    align-self: center;
+  }
+
+  .rest-list, .hotel-list {
+    width: 48%;
+    margin: 0 1%;
+    background: rgba(255,255,255,0.6);
+  }
 }

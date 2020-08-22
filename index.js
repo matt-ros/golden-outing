@@ -400,6 +400,7 @@ function displayHours(hoursHTML) {
     }
     $('.js-results').append(hoursHTML);
     $('.js-results, .js-button-container, #js-loc-refine').show('slow').removeClass('hidden');
+    $('.js-button-container').css('display', 'flex')
 }
 
 function makeGH(day = 0) {
@@ -488,11 +489,13 @@ function watch7Days() {
     $('.button-container').on('click', '#js-7day-button', event => {
         console.log('watch7Days called');
         event.preventDefault();
-        $('#js-7day-button').attr('disabled', true);
-        for (let i=1; i < astronomyData.astronomy.astronomy.length; i++) {
-            makeGH(i);
+        if ($('#day-1').text().length === 0) {
+          for (let i=1; i < astronomyData.astronomy.astronomy.length; i++) {
+              makeGH(i);
+          }
+
         }
-        $('#day-1').get(0).scrollIntoView({behavior: 'smooth'});
+        $('#day-0').get(0).scrollIntoView({behavior: 'smooth'});
     });
 }
 
