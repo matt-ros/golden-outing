@@ -226,11 +226,13 @@ function makeMap() {
 function displayRestList(restListHTML) {
     console.log('displayRestList called')
     $('.js-rest-list').html(restListHTML).toggle('slow');
+    $('.js-rest-list').get(0).scrollIntoView({behavior: 'smooth'});
 }
 
 function displayHotelList(hotelListHTML) {
     console.log('displayHotelList called')
     $('.js-hotel-list').html(hotelListHTML).toggle('slow');
+    $('.js-hotel-list').get(0).scrollIntoView({behavior: 'smooth'});
 }
 
 function makeRestList() {
@@ -384,12 +386,16 @@ function calcBH(time) {
 function createForecast(fcast) {
     console.log('createForecast called')
     if (fcast === 'No Forecast data available') {
-        return `<li>${fcast}</li>`;
+        return `<td colspan="3">${fcast}</td>`;
     }
     let forecastHTML = '';
     for (let i=0; i < fcast.length; i++) {
+        if (fcast[i] === undefined) {
+            forecastHTML += '<td>No data available</td>';
+            continue;
+        }
         const iconFilename = fcast[i].iconLink.substring(fcast[i].iconLink.lastIndexOf('/')+1);
-        forecastHTML += `<li>${fcast[i].description} Temp: ${fcast[i].temperature}&deg;F. Wind ${fcast[i].windDescShort} at ${fcast[i].windSpeed} mph. Chance of precipitation: ${fcast[i].precipitationProbability}%<br><img src="./images/weather-icons/${iconFilename}" alt="${fcast[i].iconName}"></li>`;
+        forecastHTML += `<td>${fcast[i].description} Temp: ${fcast[i].temperature}&deg;F. Wind ${fcast[i].windDescShort} at ${fcast[i].windSpeed} mph. Chance of precipitation: ${fcast[i].precipitationProbability}%<br><img src="./images/weather-icons/${iconFilename}" alt="${fcast[i].iconName}"></td>`;
     }
     return forecastHTML;
 }
@@ -400,7 +406,7 @@ function displayHours(hoursHTML) {
     }
     $('.js-results').append(hoursHTML);
     $('.js-results, .js-button-container, #js-loc-refine').show('slow').removeClass('hidden');
-    $('.js-button-container').css('display', 'flex')
+    $('.js-button-container').css('display', 'flex');
 }
 
 function makeGH(day = 0) {
@@ -429,34 +435,44 @@ function makeGH(day = 0) {
     const hoursHTML = `<div class="day">
       <h3 class="result-item" id="day-${day}">${date}</h3>
       <div class="result-item">
-      <ul>
-        <li>Morning
-          <ul>
-            <li>Blue Hour ${blueHourAM} to ${sunrise}</li>
-            <li>Sunrise ${sunrise}</li>
-            <li>Golden Hour ${sunrise} to ${goldenHourAM}</li>
-          </ul>
-        </li>
-        <li>Forecast
-          <ul>${sunriseHTML}
-          </ul>
-        </li>
-      </ul>
+        <table>
+            <tr>
+                <th colspan="3">Morning</th>
+            </tr>
+            <tr>
+                <th>Blue Hour</th>
+                <th>Sunrise</th>
+                <th> Golden Hour</th>
+            </tr>
+            <tr>
+                <td>${blueHourAM} to ${sunrise}</td>
+                <td>${sunrise}</td>
+                <td>${sunrise} to ${goldenHourAM}</td>
+            </tr>
+            <tr>
+                ${sunriseHTML}
+            </tr>
+        </table>
       </div>
       <div class="result-item">
-        <ul>
-          <li>Evening
-            <ul>
-              <li>Golden Hour ${goldenHourPM} to ${sunset}</li>
-              <li>Sunset ${sunset}</li>
-              <li>Blue Hour ${sunset} to ${blueHourPM}</li>
-            </ul>
-          </li>
-          <li>Forecast
-            <ul>${sunsetHTML}
-            </ul>
-          </li>
-        </ul>
+        <table>
+            <tr>
+                <th colspan="3">Evening</th>
+            </tr>
+            <tr>
+                <th>Golden Hour</th>
+                <th>Sunset</th>
+                <th>Blue Hour</th>
+            </tr>
+            <tr>
+                <td> ${goldenHourPM} to ${sunset}</td>
+                <td>${sunset}</td>
+                <td>${sunset} to ${blueHourPM}</td
+            </tr>
+            <tr>
+                ${sunsetHTML}
+            </tr>
+        </table>
       </div>
       </div>`;
     displayHours(hoursHTML);

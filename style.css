@@ -8,6 +8,10 @@ html {
     rgba(255, 255, 255, 0.6)
     ),
     url(./images/background2.jpg) no-repeat center center fixed;
+  -webkit-background-size: cover;
+  -moz-background-size: cover;
+  -o-background-size: cover;
+  background-size: cover;
 }
 
 body {
@@ -20,8 +24,10 @@ body {
 .results, .rest-list, .hotel-list {
     width: 90%;
     text-align: left;
-    margin: auto 5%;
+    margin: 20px 5%;
+    padding: 5px 10px;
     background: rgba(255,255,255,0.6);
+    border-radius: 10px;
 }
 
 /*.results {
@@ -50,22 +56,65 @@ ul {
 }*/
 
 iframe {
-  width: 100%;
+  width: 95%;
 }
 
 button {
   display: flex;
   flex-direction: column;
+  align-items: center;
+  background: chartreuse;
+  border-radius: 10px;
+  margin: 10px;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+
+input[type='submit'] {
+  background: chartreuse;
+  border-radius: 10px;
+  margin: 10px;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
 }
 
 .button-container {
   display: flex;
-  justify-content: center;
+  justify-content: space-between;
   align-items: center;
+  -webkit-position: sticky; top: 0px;
+  position: sticky; top: 0px;
+  background: rgba(255,255,255,0.9);
+  margin-bottom: 10px;
 }
 
 .hidden {
   display: none;
+}
+
+table {
+  width: 100%;
+  text-align: center;
+  margin: 10px auto;
+}
+
+table, th, td {
+  border: 2px solid black;
+  border-collapse: collapse;
+}
+
+th {
+  font-size: 20px;
+}
+
+th[colspan='3'] {
+  font-size: 22px;
+}
+
+h3 {
+  font-size: 24px;
 }
 
 @media all and (min-width: 800px) {
@@ -75,7 +124,11 @@ button {
     rgba(255, 255, 255, 0.6)
     ),
     url(./images/background.jpg) no-repeat center center fixed;
-}
+  -webkit-background-size: cover;
+  -moz-background-size: cover;
+  -o-background-size: cover;
+  background-size: cover;
+  }
 
   iframe {
     width: 800px;
@@ -135,5 +188,11 @@ button {
     width: 48%;
     margin: 0 1%;
     background: rgba(255,255,255,0.6);
+  }
+
+  .button-container {
+    width: 90%;
+    align-self: center;
+    border-radius: 10px;
   }
 }
