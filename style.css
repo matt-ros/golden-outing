@@ -19,6 +19,7 @@ body {
     text-align: center;
     display: flex;
     flex-direction: column;
+    color: black;
 }
 
 .results, .rest-list, .hotel-list {
@@ -26,8 +27,19 @@ body {
     text-align: left;
     margin: 20px 5%;
     padding: 5px 10px;
-    background: rgba(255,255,255,0.6);
     border-radius: 10px;
+}
+
+.rest-list, .hotel-list {
+  background: rgba(255,255,255,0.6);
+}
+
+.day {
+  width: 100%;
+  margin: 20px auto;
+  border-radius: 10px;
+  padding: 5px;
+  background: rgba(255,255,255,0.6);
 }
 
 /*.results {
@@ -56,35 +68,46 @@ ul {
 }*/
 
 iframe {
-  width: 95%;
+  width: 100%;
 }
 
 button {
   display: flex;
   flex-direction: column;
   align-items: center;
-  background: chartreuse;
+}
+
+button, input[type='submit'] {
+  background: #F04902;
+  color: #f5f5f5;
+  font-size: 18px;
   border-radius: 10px;
   margin: 10px;
   -webkit-appearance: none;
   -moz-appearance: none;
   appearance: none;
+  transition-duration: 0.4s;
 }
 
 input[type='submit'] {
-  background: chartreuse;
-  border-radius: 10px;
-  margin: 10px;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  appearance: none;
+  padding: 5px 10px;
 }
+
+@media (hover: hover) {
+  button:hover, input[type='submit']:hover {
+    background-color: #FFE200;
+    color: black;
+  }
+}
+
 
 .button-container {
   display: flex;
   justify-content: space-between;
   align-items: center;
   -webkit-position: sticky; top: 0px;
+  -moz-position: sticky; top: 0px;
+  -o-position: sticky; top: 0px;
   position: sticky; top: 0px;
   background: rgba(255,255,255,0.9);
   margin-bottom: 10px;
@@ -95,9 +118,9 @@ input[type='submit'] {
 }
 
 table {
-  width: 100%;
+  width: 90%;
   text-align: center;
-  margin: 10px auto;
+  margin: 15px auto;
 }
 
 table, th, td {
@@ -107,14 +130,44 @@ table, th, td {
 
 th {
   font-size: 20px;
+  font-weight: normal;
 }
 
 th[colspan='3'] {
   font-size: 22px;
+  font-weight: bold;
+}
+
+td.fcast {
+  vertical-align: top;
+}
+
+td::first-letter {
+  text-transform: capitalize;
 }
 
 h3 {
   font-size: 24px;
+}
+
+.results-loc {
+  background: rgba(255, 255, 255, 0.6);
+  width: 90%;
+  align-self: center;
+  border-radius: 10px;
+  margin: 20px auto;
+}
+
+.results-loc p {
+  font-size: 18px;
+}
+
+.search-container h3 {
+  cursor: pointer;
+}
+
+#js-error-message {
+  margin: 20px;
 }
 
 @media all and (min-width: 800px) {
@@ -134,6 +187,10 @@ h3 {
     width: 800px;
   }
 
+  .results {
+    background: rgba(255, 255, 255, 0.6);
+  }
+
   .day {
     display: flex;
     flex-direction: row;
@@ -141,6 +198,7 @@ h3 {
     justify-content: space-between;
     width: 100%;
     margin: auto;
+    background: rgba(255, 255, 255, 0);
   }
 
   .result-item {
@@ -157,7 +215,7 @@ h3 {
   }
 
   h1 {
-    font-size: 48px;
+    font-size: 64px;
   }
 
   /*.results {
@@ -187,7 +245,6 @@ h3 {
   .rest-list, .hotel-list {
     width: 48%;
     margin: 0 1%;
-    background: rgba(255,255,255,0.6);
   }
 
   .button-container {

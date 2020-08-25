@@ -42,7 +42,7 @@ function createWeatherGeoQuery(loc) {
             createGeoFromWeather(loc, coord);
         })
         .catch(error => {
-            $('#js-error-message').text(`Something went wrong: ${error.message}`).removeClass('hidden')
+            $('#js-error-message').text(`Something went wrong: ${error.message}`).show('slow')
         });
 }
 
@@ -69,7 +69,7 @@ function createGeoFromWeather(loc, coord) {
             createWeatherQuery('observation');
         })
         .catch(error => {
-            $('#js-error-message').text(`Something went wrong: ${error.message}`).removeClass('hidden')
+            $('#js-error-message').text(`Something went wrong: ${error.message}`).show('slow')
         });
 }
 
@@ -110,7 +110,7 @@ function createSearchQuery(category) {
 
     })
     .catch(error => {
-        $('#js-error-message').text(`Something went wrong: ${error.message}`).removeClass('hidden')
+        $('#js-error-message').text(`Something went wrong: ${error.message}`).show('slow')
     });
 }
 
@@ -135,7 +135,7 @@ function createGeoQuery(loc) {
             //console.log(geoData);
         })
         .catch(error => {
-            $('#js-error-message').text(`Something went wrong: ${error.message}`).removeClass('hidden')
+            $('#js-error-message').text(`Something went wrong: ${error.message}`).show('slow')
         });
 }
 
@@ -163,7 +163,7 @@ function createGeoWeatherQuery(loc) {
             createWeatherQuery('observation');
         })
         .catch(error => {
-            $('#js-error-message').text(`GeoWeather threw an error: ${error.message}`).removeClass('hidden')
+            $('#js-error-message').text(`Something went wrong: ${error.message}`).show('slow')
         });
 }
 
@@ -206,7 +206,7 @@ function createWeatherQuery(type) {
         }
     })
     .catch(error => {
-        $('#js-error-message').text(`Weather threw an error: ${error.message}`).removeClass('hidden')
+        $('#js-error-message').text(`Something went wrong: ${error.message}`).show('slow')
     });
 }
 
@@ -260,7 +260,7 @@ function makeHotelList() {
 function makeCurrentConditions() {
     const observation = currentConditionsData.observations.location[0].observation[0];
     const iconFilename = observation.iconLink.substring(observation.iconLink.lastIndexOf('/')+1);
-    return `<p>${observation.description} Temp: ${observation.temperature}&deg;F. Wind ${observation.windDescShort} at ${observation.windSpeed} mph.<br><img src="./images/weather-icons/${iconFilename}" alt="${observation.iconName}">`;
+    return `<p>${observation.description} Temp: ${parseInt(observation.temperature, 10)}&deg;F. Wind ${observation.windDescShort} at ${parseInt(observation.windSpeed, 10)} mph.<br><img src="./images/weather-icons/${iconFilename}" alt="${observation.iconName}">`;
 }
 
 function getForecastIndex(forecastTime) {
@@ -395,7 +395,7 @@ function createForecast(fcast) {
             continue;
         }
         const iconFilename = fcast[i].iconLink.substring(fcast[i].iconLink.lastIndexOf('/')+1);
-        forecastHTML += `<td>${fcast[i].description} Temp: ${fcast[i].temperature}&deg;F. Wind ${fcast[i].windDescShort} at ${fcast[i].windSpeed} mph. Chance of precipitation: ${fcast[i].precipitationProbability}%<br><img src="./images/weather-icons/${iconFilename}" alt="${fcast[i].iconName}"></td>`;
+        forecastHTML += `<td class="fcast">${fcast[i].description} Temp: ${parseInt(fcast[i].temperature, 10)}&deg;F. Wind ${fcast[i].windDescShort} at ${parseInt(fcast[i].windSpeed, 10)} mph. Chance of precipitation: ${fcast[i].precipitationProbability}%<br><img src="./images/weather-icons/${iconFilename}" alt="${fcast[i].iconName}"></td>`;
     }
     return forecastHTML;
 }
@@ -433,48 +433,48 @@ function makeGH(day = 0) {
     //console.log(sunriseHTML);
     //console.log(sunsetHTML);
     const hoursHTML = `<div class="day">
-      <h3 class="result-item" id="day-${day}">${date}</h3>
-      <div class="result-item">
-        <table>
-            <tr>
-                <th colspan="3">Morning</th>
-            </tr>
-            <tr>
-                <th>Blue Hour</th>
-                <th>Sunrise</th>
-                <th> Golden Hour</th>
-            </tr>
-            <tr>
-                <td>${blueHourAM} to ${sunrise}</td>
-                <td>${sunrise}</td>
-                <td>${sunrise} to ${goldenHourAM}</td>
-            </tr>
-            <tr>
-                ${sunriseHTML}
-            </tr>
-        </table>
-      </div>
-      <div class="result-item">
-        <table>
-            <tr>
-                <th colspan="3">Evening</th>
-            </tr>
-            <tr>
-                <th>Golden Hour</th>
-                <th>Sunset</th>
-                <th>Blue Hour</th>
-            </tr>
-            <tr>
-                <td> ${goldenHourPM} to ${sunset}</td>
-                <td>${sunset}</td>
-                <td>${sunset} to ${blueHourPM}</td
-            </tr>
-            <tr>
-                ${sunsetHTML}
-            </tr>
-        </table>
-      </div>
-      </div>`;
+        <h3 class="result-item" id="day-${day}">${date}</h3>
+        <div class="result-item">
+            <table>
+                <tr>
+                    <th colspan="3">Morning</th>
+                </tr>
+                <tr>
+                    <th>Blue Hour</th>
+                    <th>Sunrise</th>
+                    <th> Golden Hour</th>
+                </tr>
+                <tr>
+                    <td>${blueHourAM} to ${sunrise}</td>
+                    <td>${sunrise}</td>
+                    <td>${sunrise} to ${goldenHourAM}</td>
+                </tr>
+                <tr>
+                    ${sunriseHTML}
+                </tr>
+            </table>
+        </div>
+        <div class="result-item">
+            <table>
+                <tr>
+                    <th colspan="3">Evening</th>
+                </tr>
+                <tr>
+                    <th>Golden Hour</th>
+                    <th>Sunset</th>
+                    <th>Blue Hour</th>
+                </tr>
+                <tr>
+                    <td> ${goldenHourPM} to ${sunset}</td>
+                    <td>${sunset}</td>
+                    <td>${sunset} to ${blueHourPM}</td
+                </tr>
+                <tr>
+                    ${sunsetHTML}
+                </tr>
+            </table>
+        </div>
+        </div>`;
     displayHours(hoursHTML);
 }
 
@@ -491,8 +491,12 @@ function watchNewLoc() {
         hotelData = null;
         $('.js-results, .js-results-loc, .js-rest-list, .js-hotel-list, #js-error-message').hide('slow').empty();
         $('#js-7day-button').removeAttr('disabled');
-        const location = $('#js-location').val();
-        if (location.length === 5 && $.isNumeric(location)) {
+        const location = $('#js-location').val().trim();
+        console.log(location)
+        if (!location) {
+            $('#js-error-message').text('Please enter a location').show('fast');
+        }
+        else if (location.length === 5 && $.isNumeric(location)) {
             createWeatherGeoQuery(location);
         }
         else {
@@ -502,7 +506,7 @@ function watchNewLoc() {
 }
 
 function watch7Days() {
-    $('.button-container').on('click', '#js-7day-button', event => {
+    $('.js-button-container').on('click', '#js-7day-button', event => {
         console.log('watch7Days called');
         event.preventDefault();
         if ($('#day-1').text().length === 0) {
@@ -515,8 +519,12 @@ function watch7Days() {
     });
 }
 
-function watchRefineLoc() {
-    console.log('watchRefineLoc called');
+function watchSuggestion() {
+    const suggestions = ['Fenway Park', 'San Francisco', 'London', 'Tokyo', 'Venice', 'Statue of Liberty', 'Paris', '1600 Pennsylvania Ave NW, Washington, DC 20500', 'Miami', 'Golden Gate Bridge']
+    $('.search-container').on('click', 'h3', event => {
+        console.log('watchSuggestion called');
+        $('#js-location').val(suggestions[Math.floor(Math.random()*10)])
+    });
 }
 
 function watchRestaurants() {
@@ -547,7 +555,7 @@ function watchHotels() {
 
 function handleApp() {
     watchNewLoc();
-    watchRefineLoc();
+    watchSuggestion();
     watchRestaurants();
     watchHotels();
     watch7Days();
