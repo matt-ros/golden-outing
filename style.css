@@ -85,6 +85,7 @@ button, input[type='submit'] {
   margin: 10px;
   -webkit-appearance: none;
   -moz-appearance: none;
+  -o-appearance: none;
   appearance: none;
   transition-duration: 0.4s;
 }
@@ -168,6 +169,26 @@ h3 {
 
 #js-error-message {
   margin: 20px;
+}
+
+a {
+  text-decoration: none;
+}
+
+a:link {
+  color: black;
+}
+
+a:visited {
+  color: black;
+}
+
+a:hover {
+  color: firebrick;
+}
+
+a:active {
+  color: orangered;
 }
 
 @media all and (min-width: 800px) {

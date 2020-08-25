@@ -15,22 +15,22 @@
   <div class="start-screen">
     <div class="title">
       <h1>Golden Outing</h1>
-      <h2>Enter a location for Golden Hour times and weather for the next 7 days</h2>
     </div>
     <div class="search-container">
       <form>
+        <label for="js-location"><h2>Enter a location for Golden Hour times and weather for the next 7 days</h2></label>
         <input type="text" name="location" id="js-location" placeholder="Address, landmark, city, or US ZIP code">
         <!--<button type="button" class="hidden" name="loc-refine" id="js-loc-refine">Refine</button>-->
         <input type="submit" name="loc-submit" id="js-loc-submit" value="Go!">
       </form>
-      <h3>Need a suggestion?</h3>
+      <h3><a href="#">Need a suggestion?</a></h3>
     </div>
   </div>
   <div class="results-loc js-results-loc"></div>
   <div id="js-error-message"></div>
   <div class="button-container js-button-container hidden">
     <button name="rest-button" id="js-rest-button">
-      <div>Show/Hide</div>
+      <div>Show</div>
       <div>Restaurants</div>
     </button>
     <button name="7day-button" id="js-7day-button">
@@ -38,13 +38,13 @@
       <div>7 Day Forecast</div>
     </button>
     <button name="hotel-button" id="js-hotel-button">
-      <div>Show/Hide</div>
+      <div>Show</div>
       <div>Hotels</div>
     </button>
   </div>
   <div class="lists">
-    <section class="rest-list js-rest-list hidden"></section>
-    <section class="hotel-list js-hotel-list hidden"></section>
+    <section class="rest-list js-rest-list hidden" id="rest-list"></section>
+    <section class="hotel-list js-hotel-list hidden" id="hotel-list"></section>
   </div>
   <section class="results js-results hidden"></section>
 

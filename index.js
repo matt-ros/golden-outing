@@ -226,34 +226,46 @@ function makeMap() {
 function displayRestList(restListHTML) {
     console.log('displayRestList called')
     $('.js-rest-list').html(restListHTML).toggle('slow');
-    $('.js-rest-list').get(0).scrollIntoView({behavior: 'smooth'});
+    $('#rest-list').get(0).scrollIntoView({behavior: 'smooth'});
 }
 
 function displayHotelList(hotelListHTML) {
     console.log('displayHotelList called')
     $('.js-hotel-list').html(hotelListHTML).toggle('slow');
-    $('.js-hotel-list').get(0).scrollIntoView({behavior: 'smooth'});
+    $('#hotel-list').get(0).scrollIntoView({behavior: 'smooth'});
 }
 
 function makeRestList() {
     console.log('makeRestList called');
-    let restListHTML = '<h3>Nearest Restaurants</h3><ol>'
-    for (let i=0; i < restData.items.length; i++) {
-        //console.log(`cycle ${i+1}`);
-        restListHTML += `<li><a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(restData.items[i].address.label)}" target="_blank">${restData.items[i].address.label}</a></li><br>`
+    let restListHTML = '<h3>Nearest Restaurants</h3>'
+    if (restData.items.length === 0) {
+        restListHTML += '<p>No restaurants found</p>';
     }
-    restListHTML += '</ol>';
+    else {
+        restListHTML += '<ol>'
+        for (let i=0; i < restData.items.length; i++) {
+            //console.log(`cycle ${i+1}`);
+            restListHTML += `<li><a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(restData.items[i].address.label)}" target="_blank">${restData.items[i].address.label}</a></li><br>`
+        }
+        restListHTML += '</ol>';
+    }
     //console.log(restListHTML);
     displayRestList(restListHTML);
 }
 
 function makeHotelList() {
     console.log('makeHotelList called');
-    let hotelListHTML = '<h3>Nearest Hotels</h3><ol>';
-    for (let i=0; i < hotelData.items.length; i++) {
-        hotelListHTML += `<li><a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(hotelData.items[i].address.label)}" target="_blank">${hotelData.items[i].address.label}</a></li><br>`
+    let hotelListHTML = '<h3>Nearest Hotels</h3>';
+    if (hotelData.items.length === 0) {
+        hotelListHTML += '<p>No hotels found</p>';
     }
-    hotelListHTML += '</ol>';
+    else {
+        hotelListHTML += '<ol>'
+        for (let i=0; i < hotelData.items.length; i++) {
+            hotelListHTML += `<li><a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(hotelData.items[i].address.label)}" target="_blank">${hotelData.items[i].address.label}</a></li><br>`
+        }
+        hotelListHTML += '</ol>';
+    }
     displayHotelList(hotelListHTML);
 }
 
@@ -520,8 +532,9 @@ function watch7Days() {
 }
 
 function watchSuggestion() {
-    const suggestions = ['Fenway Park', 'San Francisco', 'London', 'Tokyo', 'Venice', 'Statue of Liberty', 'Paris', '1600 Pennsylvania Ave NW, Washington, DC 20500', 'Miami', 'Golden Gate Bridge']
-    $('.search-container').on('click', 'h3', event => {
+    const suggestions = ['Fenway Park', 'San Francisco', 'London', 'Sydney Opera House', 'Venice', 'Statue of Liberty', 'Paris', '1600 Pennsylvania Ave NW, Washington, DC 20500', 'Miami', 'Golden Gate Bridge']
+    $('.search-container').on('click', 'a', event => {
+        event.preventDefault();
         console.log('watchSuggestion called');
         $('#js-location').val(suggestions[Math.floor(Math.random()*10)])
     });
@@ -534,8 +547,8 @@ function watchRestaurants() {
             createSearchQuery('restaurant');
         }
         else {
-          $('.js-rest-list').toggle('slow');
-          $('.js-rest-list').get(0).scrollIntoView({behavior: 'smooth'});
+          //$('.js-rest-list').toggle('slow');
+          $('#rest-list').get(0).scrollIntoView({behavior: 'smooth'});
         }
     });
 }
@@ -547,8 +560,8 @@ function watchHotels() {
             createSearchQuery('hotel');
         }
         else {
-          $('.js-hotel-list').toggle('slow');
-          $('.js-hotel-list').get(0).scrollIntoView({behavior: 'smooth'})
+          //$('.js-hotel-list').toggle('slow');
+          $('#hotel-list').get(0).scrollIntoView({behavior: 'smooth'})
         }
     });
 }
