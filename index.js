@@ -407,7 +407,7 @@ function createForecast(fcast) {
             continue;
         }
         const iconFilename = fcast[i].iconLink.substring(fcast[i].iconLink.lastIndexOf('/')+1);
-        forecastHTML += `<td class="fcast">${fcast[i].description} Temp: ${parseInt(fcast[i].temperature, 10)}&deg;F. Wind ${fcast[i].windDescShort} at ${parseInt(fcast[i].windSpeed, 10)} mph. Chance of precipitation: ${fcast[i].precipitationProbability}%<br><img src="./images/weather-icons/${iconFilename}" alt="${fcast[i].iconName}"></td>`;
+        forecastHTML += `<td class="fcast">${fcast[i].description}<br>Temp: ${parseInt(fcast[i].temperature, 10)}&deg;F.<br>Wind ${fcast[i].windDescShort} at ${parseInt(fcast[i].windSpeed, 10)} mph.<br>Chance of precipitation: ${fcast[i].precipitationProbability}%<br><img src="./images/weather-icons/${iconFilename}" alt="${fcast[i].iconName}"></td>`;
     }
     return forecastHTML;
 }
