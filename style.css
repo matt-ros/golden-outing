@@ -1,5 +1,5 @@
 * {
-    box-sizing: border-box;
+  box-sizing: border-box;
 }
 
 html {
@@ -15,19 +15,19 @@ html {
 }
 
 body {
-    font-family: 'Raleway', sans-serif;
-    text-align: center;
-    display: flex;
-    flex-direction: column;
-    color: black;
+  font-family: 'Raleway', sans-serif;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  color: black;
 }
 
 .results, .rest-list, .hotel-list {
-    width: 90%;
-    text-align: left;
-    margin: 20px 5%;
-    padding: 5px 10px;
-    border-radius: 10px;
+  width: 90%;
+  text-align: left;
+  margin: 20px 5%;
+  padding: 5px 10px;
+  border-radius: 10px;
 }
 
 .rest-list, .hotel-list {
@@ -42,13 +42,9 @@ body {
   background: rgba(255,255,255,0.6);
 }
 
-/*.results {
-    border: 1px solid green;
-}*/
-
 h1 {
-    font-family: 'Alfa Slab One', cursive;
-    font-size: 36px;
+  font-family: 'Alfa Slab One', cursive;
+  font-size: 36px;
 }
 
 input[name='location'] {
@@ -62,10 +58,6 @@ input[name='location'] {
 ul {
   list-style-type: none;
 }
-
-/*ul, .rest-list, .hotel-list, h3.item {
-    border: 1px solid red;
-}*/
 
 iframe {
   width: 95%;
@@ -195,15 +187,15 @@ a:active {
 
 @media all and (min-width: 800px) {
   html {
-  background: linear-gradient(
-    rgba(255, 255, 255, 0.6),
-    rgba(255, 255, 255, 0.6)
-    ),
-    url(./images/background.jpg) no-repeat center center fixed;
-  -webkit-background-size: cover;
-  -moz-background-size: cover;
-  -o-background-size: cover;
-  background-size: cover;
+    background: linear-gradient(
+      rgba(255, 255, 255, 0.6),
+      rgba(255, 255, 255, 0.6)
+      ),
+      url(./images/background.jpg) no-repeat center center fixed;
+    -webkit-background-size: cover;
+    -moz-background-size: cover;
+    -o-background-size: cover;
+    background-size: cover;
   }
 
   iframe {
@@ -241,22 +233,6 @@ a:active {
   h1 {
     font-size: 64px;
   }
-
-  /*.results {
-    width: 100%;
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
-    justify-content: space-between;
-  }
-
-  .result-item {
-    width: 48%;
-  }
-
-  .result-item:nth-child(3n-2) {
-    width: 100%;
-  }*/
 
   .lists {
     display: flex;

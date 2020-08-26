@@ -1,7 +1,7 @@
 'use strict';
 
 const key = 'pFfcXSfgYVfQMIMhlBxuDMZaFrbBSxDBfrF3SToyMYY';
-const gKey = 'AIzaSyC_oOddO8wOobo7U9amQ5RJlm6z9UDwIE0'; 
+const gKey = 'AIzaSyC_oOddO8wOobo7U9amQ5RJlm6z9UDwIE0';
 const weatherBase = 'https://weather.ls.hereapi.com/weather/1.0/report.json';
 const searchBase = 'https://browse.search.hereapi.com/v1/browse';
 const geoBase = 'https://geocode.search.hereapi.com/v1/geocode';
@@ -13,11 +13,16 @@ let currentConditionsData = null;
 let restData = null;
 let hotelData = null;
 
+// Format paramaters into URL-encoded query string for API calls.
+
 function formatQueryParams(params) {
     const queryItems = Object.keys(params)
-      .map(key => `${encodeURIComponent(key)}=${encodeURIComponent(params[key])}`)
+        .map(key => `${encodeURIComponent(key)}=${encodeURIComponent(params[key])}`)
     return queryItems.join('&');
 }
+
+// All of the `createXxxxxxQuery` functions (as well as createGeoFromWeather)
+// call their APIs and then call further functions using the response data.
 
 function createWeatherGeoQuery(loc) {
     const params = {
@@ -90,40 +95,6 @@ function createSearchQuery(category) {
     const searchUrl = searchBase + '?' + queryString;
 
     fetch(searchUrl)
-    .then(response => {
-        if (response.ok) {
-            return response.json();
-        }
-        throw new Error(response.statusText);
-    })
-    .then(responseJson => {
-        if (category === 'restaurant') {
-            restData = responseJson;
-            console.log(restData);
-            makeRestList();
-        }
-        if (category === 'hotel') {
-            hotelData = responseJson;
-            console.log(hotelData);
-            makeHotelList();
-        }
-
-    })
-    .catch(error => {
-        $('#js-error-message').text(`Something went wrong: ${error.message}`).show('slow')
-    });
-}
-
-function createGeoQuery(loc) {
-    const params = {
-        apiKey: key,
-        q: loc,
-        lang: 'en-US'
-    }
-    const queryString = formatQueryParams(params);
-    const geoUrl = geoBase + '?' + queryString;
-
-    fetch(geoUrl)
         .then(response => {
             if (response.ok) {
                 return response.json();
@@ -131,8 +102,15 @@ function createGeoQuery(loc) {
             throw new Error(response.statusText);
         })
         .then(responseJson => {
-            geoData = responseJson;
-            //console.log(geoData);
+            if (category === 'restaurant') {
+                restData = responseJson;
+                makeRestList();
+            }
+            if (category === 'hotel') {
+                hotelData = responseJson;
+                makeHotelList();
+            }
+
         })
         .catch(error => {
             $('#js-error-message').text(`Something went wrong: ${error.message}`).show('slow')
@@ -157,7 +135,6 @@ function createGeoWeatherQuery(loc) {
         })
         .then(responseJson => {
             geoData = responseJson;
-            //console.log(geoData);
             createWeatherQuery('astronomy');
             createWeatherQuery('hourly');
             createWeatherQuery('observation');
@@ -183,32 +160,32 @@ function createWeatherQuery(type) {
     const weatherUrl = weatherBase + '?' + queryString;
 
     fetch(weatherUrl)
-    .then(response => {
-        if (response.ok) {
-            return response.json();
-        }
-        throw new Error(response.statusText);
-    })
-    .then(responseJson => {
-        if (type === 'astronomy') {
-            astronomyData = responseJson;
-            //console.log(astronomyData);
-        }
-        if (type === 'hourly') {
-            hourlyData = responseJson;
-            //console.log(hourlyData);
-        }
-        if (type === 'observation') {
-            currentConditionsData = responseJson;
-        }
-        if (astronomyData !== null && hourlyData !== null && currentConditionsData !== null) {
-            makeGH();
-        }
-    })
-    .catch(error => {
-        $('#js-error-message').text(`Something went wrong: ${error.message}`).show('slow')
-    });
+        .then(response => {
+            if (response.ok) {
+                return response.json();
+            }
+            throw new Error(response.statusText);
+        })
+        .then(responseJson => {
+            if (type === 'astronomy') {
+                astronomyData = responseJson;
+            }
+            if (type === 'hourly') {
+                hourlyData = responseJson;
+            }
+            if (type === 'observation') {
+                currentConditionsData = responseJson;
+            }
+            if (astronomyData !== null && hourlyData !== null && currentConditionsData !== null) {
+                makeGH();
+            }
+        })
+        .catch(error => {
+            $('#js-error-message').text(`Something went wrong: ${error.message}`).show('slow');
+        });
 }
+
+// Generate HTML for the embedded Google Map.
 
 function makeMap() {
     const params = {
@@ -223,45 +200,43 @@ function makeMap() {
     return `<iframe width="800" height="450" frameborder="0" style="border:0" src="${mapUrl}" allowfullscreen></iframe>`;
 }
 
+// Display restaurant and hotel lists with generated HTML.
+
 function displayRestList(restListHTML) {
-    console.log('displayRestList called')
     $('.js-rest-list').html(restListHTML).toggle('slow');
-    $('#rest-list').get(0).scrollIntoView({behavior: 'smooth'});
+    $('#rest-list').get(0).scrollIntoView({ behavior: 'smooth' });
 }
 
 function displayHotelList(hotelListHTML) {
-    console.log('displayHotelList called')
     $('.js-hotel-list').html(hotelListHTML).toggle('slow');
-    $('#hotel-list').get(0).scrollIntoView({behavior: 'smooth'});
+    $('#hotel-list').get(0).scrollIntoView({ behavior: 'smooth' });
 }
 
+// Generate HTML for restaurant and hotel lists.
+
 function makeRestList() {
-    console.log('makeRestList called');
     let restListHTML = '<h3>Nearest Restaurants</h3>'
     if (restData.items.length === 0) {
         restListHTML += '<p>No restaurants found</p>';
     }
     else {
         restListHTML += '<ol>'
-        for (let i=0; i < restData.items.length; i++) {
-            //console.log(`cycle ${i+1}`);
+        for (let i = 0; i < restData.items.length; i++) {
             restListHTML += `<li><a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(restData.items[i].address.label)}" target="_blank">${restData.items[i].address.label}</a></li><br>`
         }
         restListHTML += '</ol>';
     }
-    //console.log(restListHTML);
     displayRestList(restListHTML);
 }
 
 function makeHotelList() {
-    console.log('makeHotelList called');
     let hotelListHTML = '<h3>Nearest Hotels</h3>';
     if (hotelData.items.length === 0) {
         hotelListHTML += '<p>No hotels found</p>';
     }
     else {
         hotelListHTML += '<ol>'
-        for (let i=0; i < hotelData.items.length; i++) {
+        for (let i = 0; i < hotelData.items.length; i++) {
             hotelListHTML += `<li><a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(hotelData.items[i].address.label)}" target="_blank">${hotelData.items[i].address.label}</a></li><br>`
         }
         hotelListHTML += '</ol>';
@@ -269,14 +244,16 @@ function makeHotelList() {
     displayHotelList(hotelListHTML);
 }
 
+// Generate HTML for current weather conditions.
+
 function makeCurrentConditions() {
     const observation = currentConditionsData.observations.location[0].observation[0];
-    const iconFilename = observation.iconLink.substring(observation.iconLink.lastIndexOf('/')+1);
+    const iconFilename = observation.iconLink.substring(observation.iconLink.lastIndexOf('/') + 1);
     return `<p>${observation.description} Temp: ${parseInt(observation.temperature, 10)}&deg;F. Wind ${observation.windDescShort} at ${parseInt(observation.windSpeed, 10)} mph.<br><img src="./images/weather-icons/${iconFilename}" alt="${observation.iconName}">`;
 }
 
 function getForecastIndex(forecastTime) {
-    for (let i=0; i < hourlyData.hourlyForecasts.forecastLocation.forecast.length; i++) {
+    for (let i = 0; i < hourlyData.hourlyForecasts.forecastLocation.forecast.length; i++) {
         if (hourlyData.hourlyForecasts.forecastLocation.forecast[i].localTime === forecastTime) {
             return i;
         }
@@ -284,14 +261,18 @@ function getForecastIndex(forecastTime) {
     return -1;
 }
 
+// Reformat date portion of UTC time string to match style used in hourly
+// forecast.
+
 function parseLocalTime(utcTime) {
     const rawDate = utcTime.substring(0, utcTime.indexOf('T'));
     const dateArray = rawDate.split('-');
     return `${dateArray[1]}${dateArray[2]}${dateArray[0]}`;
 }
 
+// Retrieve forecasts for a given hour, plus an hour before and after.
+
 function getForecast(hour, utcTime) {
-    console.log('getForecast called')
     const forecastDate = parseLocalTime(utcTime);
     const forecastTime = `${hour}${forecastDate}`;
     const forecastIndex = getForecastIndex(forecastTime);
@@ -299,9 +280,11 @@ function getForecast(hour, utcTime) {
         return 'No Forecast data available'
     }
     else {
-        return [hourlyData.hourlyForecasts.forecastLocation.forecast[forecastIndex-1], hourlyData.hourlyForecasts.forecastLocation.forecast[forecastIndex], hourlyData.hourlyForecasts.forecastLocation.forecast[forecastIndex+1]];
+        return [hourlyData.hourlyForecasts.forecastLocation.forecast[forecastIndex - 1], hourlyData.hourlyForecasts.forecastLocation.forecast[forecastIndex], hourlyData.hourlyForecasts.forecastLocation.forecast[forecastIndex + 1]];
     }
 }
+
+// Convert the hour portion of a 12-hour formatted time to 24-hour format.
 
 function getHour(time) {
     let hour = time.substring(0, time.indexOf(':'));
@@ -323,6 +306,8 @@ function getHour(time) {
     }
 }
 
+// Reformat date portion of a UTC time string to be more human friendly.
+
 function parseDate(utcTime) {
     const months = {
         '01': 'January',
@@ -342,6 +327,9 @@ function parseDate(utcTime) {
     const dateArray = rawDate.split('-');
     return `${months[dateArray[1]]} ${dateArray[2]}, ${dateArray[0]}`
 }
+
+// Add an hour to sunrise or subtract an hour from sunset to create the time
+// for Golden Hour.
 
 function calcGH(time) {
     const am = (time.charAt(time.length - 2) === 'A');
@@ -369,6 +357,9 @@ function calcGH(time) {
     return `${hour}${min}${aOrP}M`;
 }
 
+// Subtract an hour from sunrise or add an hour to sunset to create the time
+// for Blue Hour.
+
 function calcBH(time) {
     const am = (time.charAt(time.length - 2) === 'A');
     let aOrP = time.charAt(time.length - 2)
@@ -395,22 +386,27 @@ function calcBH(time) {
     return `${hour}${min}${aOrP}M`;
 }
 
+// Generate HTML for forecasts.
+
 function createForecast(fcast) {
-    console.log('createForecast called')
     if (fcast === 'No Forecast data available') {
         return `<td colspan="3">${fcast}</td>`;
     }
     let forecastHTML = '';
-    for (let i=0; i < fcast.length; i++) {
+    for (let i = 0; i < fcast.length; i++) {
         if (fcast[i] === undefined) {
             forecastHTML += '<td>No data available</td>';
             continue;
         }
-        const iconFilename = fcast[i].iconLink.substring(fcast[i].iconLink.lastIndexOf('/')+1);
+        const iconFilename = fcast[i].iconLink.substring(fcast[i].iconLink.lastIndexOf('/') + 1);
         forecastHTML += `<td class="fcast">${fcast[i].description}<br>Temp: ${parseInt(fcast[i].temperature, 10)}&deg;F.<br>Wind ${fcast[i].windDescShort} at ${parseInt(fcast[i].windSpeed, 10)} mph.<br>Chance of precipitation: ${fcast[i].precipitationProbability}%<br><img src="./images/weather-icons/${iconFilename}" alt="${fcast[i].iconName}"></td>`;
     }
     return forecastHTML;
 }
+
+// On new location search, display map, current conditions, and today's Golden
+// and Blue hour forecasts. This function is also called to append new days to
+// the forecast data.
 
 function displayHours(hoursHTML) {
     if ($('.js-results').text().length === 0) {
@@ -421,29 +417,23 @@ function displayHours(hoursHTML) {
     $('.js-button-container').css('display', 'flex');
 }
 
+// Generate HTML for each forecast day.
+
 function makeGH(day = 0) {
-    console.log('makeGH called');
     const sunrise = astronomyData.astronomy.astronomy[day].sunrise;
     const sunset = astronomyData.astronomy.astronomy[day].sunset;
     const utcTime = astronomyData.astronomy.astronomy[day].utcTime;
-    //console.log(`sunrise is at ${sunrise}, sunset is at ${sunset}`);
     const sunriseHour = getHour(sunrise);
     const sunsetHour = getHour(sunset);
     const date = parseDate(utcTime);
-    //const date = utcTime;
-    //console.log(`sunrise hour is ${sunriseHour}, sunset hour is ${sunsetHour}`);
     const goldenHourAM = calcGH(sunrise);
     const goldenHourPM = calcGH(sunset);
     const blueHourAM = calcBH(sunrise);
     const blueHourPM = calcBH(sunset);
     const sunriseForecast = getForecast(sunriseHour, utcTime);
     const sunsetForecast = getForecast(sunsetHour, utcTime);
-    //console.log(sunriseForecast);
-    //console.log(sunsetForecast);
     const sunriseHTML = createForecast(sunriseForecast);
     const sunsetHTML = createForecast(sunsetForecast);
-    //console.log(sunriseHTML);
-    //console.log(sunsetHTML);
     const hoursHTML = `<div class="day">
         <h3 class="result-item" id="day-${day}">${date}</h3>
         <div class="result-item">
@@ -490,9 +480,11 @@ function makeGH(day = 0) {
     displayHours(hoursHTML);
 }
 
+// Event listener for new location search. Clear displayed data and API data
+// and initialize new search.
+
 function watchNewLoc() {
     $('.search-container').on('click', '#js-loc-submit', event => {
-        console.log('watchNewLoc called');
         event.preventDefault();
         $('.title').hide('slow');
         $('.start-screen').css('margin', '20px auto');
@@ -504,7 +496,6 @@ function watchNewLoc() {
         $('.js-results, .js-results-loc, .js-rest-list, .js-hotel-list, #js-error-message').hide('slow').empty();
         $('#js-7day-button').removeAttr('disabled');
         const location = $('#js-location').val().trim();
-        console.log(location)
         if (!location) {
             $('#js-error-message').text('Please enter a location').show('fast');
         }
@@ -517,61 +508,69 @@ function watchNewLoc() {
     });
 }
 
+// Event listener for 7 Day Forecast button. Create forecast if not already
+// displayed and scroll to it.
+
 function watch7Days() {
     $('.js-button-container').on('click', '#js-7day-button', event => {
-        console.log('watch7Days called');
         event.preventDefault();
         if ($('#day-1').text().length === 0) {
-          for (let i=1; i < astronomyData.astronomy.astronomy.length; i++) {
-              makeGH(i);
-          }
+            for (let i = 1; i < astronomyData.astronomy.astronomy.length; i++) {
+                makeGH(i);
+            }
 
         }
-        $('#day-0').get(0).scrollIntoView({behavior: 'smooth'});
+        $('#day-0').get(0).scrollIntoView({ behavior: 'smooth' });
     });
 }
+
+// Event listener for Suggestion link. Insert a random entry from the array into
+// the search box.
 
 function watchSuggestion() {
     const suggestions = ['Fenway Park', 'San Francisco', 'London', 'Sydney Opera House', 'Venice', 'Statue of Liberty', 'Paris', '1600 Pennsylvania Ave NW, Washington, DC 20500', 'Miami', 'Golden Gate Bridge']
     $('.search-container').on('click', 'a', event => {
         event.preventDefault();
-        console.log('watchSuggestion called');
-        $('#js-location').val(suggestions[Math.floor(Math.random()*10)])
+        $('#js-location').val(suggestions[Math.floor(Math.random() * 10)])
     });
 }
 
+// Event listener for Restaurant button. Query API and generate list if needed, 
+// otherwise just scroll to the list.
+
 function watchRestaurants() {
     $('.js-button-container').on('click', '#js-rest-button', event => {
-        console.log('watchRestaurants called');
         if ($('.js-rest-list').text().length === 0) {
             createSearchQuery('restaurant');
         }
         else {
-          //$('.js-rest-list').toggle('slow');
-          $('#rest-list').get(0).scrollIntoView({behavior: 'smooth'});
+            $('#rest-list').get(0).scrollIntoView({ behavior: 'smooth' });
         }
     });
 }
 
+// Event listener for Hotel button. Query API and generate list if needed, 
+// otherwise just scroll to the list.
+
 function watchHotels() {
     $('.js-button-container').on('click', '#js-hotel-button', event => {
-        console.log('watchHotels called');
         if ($('.js-hotel-list').text().length === 0) {
             createSearchQuery('hotel');
         }
         else {
-          //$('.js-hotel-list').toggle('slow');
-          $('#hotel-list').get(0).scrollIntoView({behavior: 'smooth'})
+            $('#hotel-list').get(0).scrollIntoView({ behavior: 'smooth' })
         }
     });
 }
 
+// Callback function triggered on document ready.
+
 function handleApp() {
     watchNewLoc();
+    watch7Days();
     watchSuggestion();
     watchRestaurants();
     watchHotels();
-    watch7Days();
 }
 
 $(handleApp);
