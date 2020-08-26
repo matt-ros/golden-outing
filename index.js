@@ -17,7 +17,7 @@ let hotelData = null;
 
 function formatQueryParams(params) {
     const queryItems = Object.keys(params)
-        .map(key => `${encodeURIComponent(key)}=${encodeURIComponent(params[key])}`)
+        .map(key => `${encodeURIComponent(key)}=${encodeURIComponent(params[key])}`);
     return queryItems.join('&');
 }
 
@@ -47,7 +47,7 @@ function createWeatherGeoQuery(loc) {
             createGeoFromWeather(loc, coord);
         })
         .catch(error => {
-            $('#js-error-message').text(`Something went wrong: ${error.message}`).show('slow')
+            $('#js-error-message').text(`Something went wrong: ${error.message}. Please try again.`).show('slow');
         });
 }
 
@@ -74,7 +74,7 @@ function createGeoFromWeather(loc, coord) {
             createWeatherQuery('observation');
         })
         .catch(error => {
-            $('#js-error-message').text(`Something went wrong: ${error.message}`).show('slow')
+            $('#js-error-message').text(`Something went wrong: ${error.message}. Please try again.`).show('slow');
         });
 }
 
@@ -86,10 +86,10 @@ function createSearchQuery(category) {
         lang: 'en-US'
     }
     if (category === 'restaurant') {
-        params.categories = '100-1000'
+        params.categories = '100-1000';
     }
     if (category === 'hotel') {
-        params.categories = '500-5000,500-5100-0057,500-5100-0058'
+        params.categories = '500-5000,500-5100-0057,500-5100-0058';
     }
     const queryString = formatQueryParams(params);
     const searchUrl = searchBase + '?' + queryString;
@@ -113,7 +113,7 @@ function createSearchQuery(category) {
 
         })
         .catch(error => {
-            $('#js-error-message').text(`Something went wrong: ${error.message}`).show('slow')
+            $('#js-error-message').text(`Something went wrong: ${error.message}. Please try again.`).show('slow');
         });
 }
 
@@ -135,12 +135,15 @@ function createGeoWeatherQuery(loc) {
         })
         .then(responseJson => {
             geoData = responseJson;
-            createWeatherQuery('astronomy');
-            createWeatherQuery('hourly');
-            createWeatherQuery('observation');
+            if (geoData.items.length > 0) {
+                createWeatherQuery('astronomy');
+                createWeatherQuery('hourly');
+                createWeatherQuery('observation');
+            }
+            throw new Error('Please enter a valid location.');
         })
         .catch(error => {
-            $('#js-error-message').text(`Something went wrong: ${error.message}`).show('slow')
+            $('#js-error-message').text(`Something went wrong: ${error.message}`).show('slow');
         });
 }
 
@@ -181,7 +184,7 @@ function createWeatherQuery(type) {
             }
         })
         .catch(error => {
-            $('#js-error-message').text(`Something went wrong: ${error.message}`).show('slow');
+            $('#js-error-message').text(`Something went wrong: ${error.message}. Please try again.`).show('slow');
         });
 }
 
@@ -215,12 +218,12 @@ function displayHotelList(hotelListHTML) {
 // Generate HTML for restaurant and hotel lists.
 
 function makeRestList() {
-    let restListHTML = '<h3>Nearest Restaurants</h3>'
+    let restListHTML = '<h3>Nearest Restaurants</h3>';
     if (restData.items.length === 0) {
         restListHTML += '<p>No restaurants found</p>';
     }
     else {
-        restListHTML += '<ol>'
+        restListHTML += '<ol>';
         for (let i = 0; i < restData.items.length; i++) {
             restListHTML += `<li><a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(restData.items[i].address.label)}" target="_blank">${restData.items[i].address.label}</a></li><br>`
         }
@@ -497,7 +500,7 @@ function watchNewLoc() {
         $('#js-7day-button').removeAttr('disabled');
         const location = $('#js-location').val().trim();
         if (!location) {
-            $('#js-error-message').text('Please enter a location').show('fast');
+            $('#js-error-message').text('Please enter a valid location.').show('fast');
         }
         else if (location.length === 5 && $.isNumeric(location)) {
             createWeatherGeoQuery(location);
@@ -535,7 +538,7 @@ function watchSuggestion() {
     });
 }
 
-// Event listener for Restaurant button. Query API and generate list if needed, 
+// Event listener for Restaurant button. Query API and generate list if needed,
 // otherwise just scroll to the list.
 
 function watchRestaurants() {
@@ -549,7 +552,7 @@ function watchRestaurants() {
     });
 }
 
-// Event listener for Hotel button. Query API and generate list if needed, 
+// Event listener for Hotel button. Query API and generate list if needed,
 // otherwise just scroll to the list.
 
 function watchHotels() {

@@ -73,7 +73,7 @@ button {
 
 button, input[type='submit'] {
   background: #F04902;
-  color: #f5f5f5;
+  color: black;
   font-size: 18px;
   border-radius: 10px;
   margin: 10px;
