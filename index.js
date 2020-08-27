@@ -1,17 +1,19 @@
 'use strict';
 
-const key = 'pFfcXSfgYVfQMIMhlBxuDMZaFrbBSxDBfrF3SToyMYY';
-const gKey = 'AIzaSyC_oOddO8wOobo7U9amQ5RJlm6z9UDwIE0';
-const weatherBase = 'https://weather.ls.hereapi.com/weather/1.0/report.json';
-const searchBase = 'https://browse.search.hereapi.com/v1/browse';
-const geoBase = 'https://geocode.search.hereapi.com/v1/geocode';
-const mapBase = 'https://www.google.com/maps/embed/v1/place';
-let geoData = null;
-let astronomyData = null;
-let hourlyData = null;
-let currentConditionsData = null;
-let restData = null;
-let hotelData = null;
+const STORE = {
+    key: 'pFfcXSfgYVfQMIMhlBxuDMZaFrbBSxDBfrF3SToyMYY',
+    gKey: 'AIzaSyC_oOddO8wOobo7U9amQ5RJlm6z9UDwIE0',
+    weatherBase: 'https://weather.ls.hereapi.com/weather/1.0/report.json',
+    searchBase: 'https://browse.search.hereapi.com/v1/browse',
+    geoBase: 'https://geocode.search.hereapi.com/v1/geocode',
+    mapBase: 'https://www.google.com/maps/embed/v1/place',
+    geoData: null,
+    astronomyData: null,
+    hourlyData: null,
+    currentConditionsData: null,
+    restData: null,
+    hotelData: null
+}
 
 // Format paramaters into URL-encoded query string for API calls.
 
@@ -26,13 +28,13 @@ function formatQueryParams(params) {
 
 function createWeatherGeoQuery(loc) {
     const params = {
-        apiKey: key,
+        apiKey: STORE.key,
         name: loc,
         metric: false,
         product: 'forecast_astronomy'
     }
     const queryString = formatQueryParams(params);
-    const weatherUrl = weatherBase + '?' + queryString;
+    const weatherUrl = STORE.weatherBase + '?' + queryString;
 
     fetch(weatherUrl)
         .then(response => {
@@ -42,8 +44,8 @@ function createWeatherGeoQuery(loc) {
             throw new Error(response.statusText);
         })
         .then(responseJson => {
-            astronomyData = responseJson;
-            const coord = `${astronomyData.astronomy.latitude},${astronomyData.astronomy.longitude}`;
+            STORE.astronomyData = responseJson;
+            const coord = `${STORE.astronomyData.astronomy.latitude},${STORE.astronomyData.astronomy.longitude}`;
             createGeoFromWeather(loc, coord);
         })
         .catch(error => {
@@ -53,13 +55,13 @@ function createWeatherGeoQuery(loc) {
 
 function createGeoFromWeather(loc, coord) {
     const params = {
-        apiKey: key,
+        apiKey: STORE.key,
         q: loc,
         at: coord,
         lang: 'en-US'
     }
     const queryString = formatQueryParams(params);
-    const geoUrl = geoBase + '?' + queryString;
+    const geoUrl = STORE.geoBase + '?' + queryString;
 
     fetch(geoUrl)
         .then(response => {
@@ -69,7 +71,7 @@ function createGeoFromWeather(loc, coord) {
             throw new Error(response.statusText);
         })
         .then(responseJson => {
-            geoData = responseJson;
+            STORE.geoData = responseJson;
             createWeatherQuery('hourly');
             createWeatherQuery('observation');
         })
@@ -80,8 +82,8 @@ function createGeoFromWeather(loc, coord) {
 
 function createSearchQuery(category) {
     const params = {
-        apiKey: key,
-        at: `${geoData.items[0].position.lat},${geoData.items[0].position.lng}`,
+        apiKey: STORE.key,
+        at: `${STORE.geoData.items[0].position.lat},${STORE.geoData.items[0].position.lng}`,
         limit: 10,
         lang: 'en-US'
     }
@@ -92,7 +94,7 @@ function createSearchQuery(category) {
         params.categories = '500-5000,500-5100-0057,500-5100-0058';
     }
     const queryString = formatQueryParams(params);
-    const searchUrl = searchBase + '?' + queryString;
+    const searchUrl = STORE.searchBase + '?' + queryString;
 
     fetch(searchUrl)
         .then(response => {
@@ -103,11 +105,11 @@ function createSearchQuery(category) {
         })
         .then(responseJson => {
             if (category === 'restaurant') {
-                restData = responseJson;
+                STORE.restData = responseJson;
                 makeRestList();
             }
             if (category === 'hotel') {
-                hotelData = responseJson;
+                STORE.hotelData = responseJson;
                 makeHotelList();
             }
 
@@ -119,12 +121,12 @@ function createSearchQuery(category) {
 
 function createGeoWeatherQuery(loc) {
     const params = {
-        apiKey: key,
+        apiKey: STORE.key,
         q: loc,
         lang: 'en-US'
     }
     const queryString = formatQueryParams(params);
-    const geoUrl = geoBase + '?' + queryString;
+    const geoUrl = STORE.geoBase + '?' + queryString;
 
     fetch(geoUrl)
         .then(response => {
@@ -134,8 +136,8 @@ function createGeoWeatherQuery(loc) {
             throw new Error(response.statusText);
         })
         .then(responseJson => {
-            geoData = responseJson;
-            if (geoData.items.length > 0) {
+            STORE.geoData = responseJson;
+            if (STORE.geoData.items.length > 0) {
                 createWeatherQuery('astronomy');
                 createWeatherQuery('hourly');
                 createWeatherQuery('observation');
@@ -151,9 +153,9 @@ function createGeoWeatherQuery(loc) {
 
 function createWeatherQuery(type) {
     const params = {
-        apiKey: key,
-        latitude: geoData.items[0].position.lat,
-        longitude: geoData.items[0].position.lng,
+        apiKey: STORE.key,
+        latitude: STORE.geoData.items[0].position.lat,
+        longitude: STORE.geoData.items[0].position.lng,
         product: `forecast_${type}`,
         metric: false
     }
@@ -162,7 +164,7 @@ function createWeatherQuery(type) {
         params.oneobservation = true;
     }
     const queryString = formatQueryParams(params);
-    const weatherUrl = weatherBase + '?' + queryString;
+    const weatherUrl = STORE.weatherBase + '?' + queryString;
 
     fetch(weatherUrl)
         .then(response => {
@@ -173,15 +175,15 @@ function createWeatherQuery(type) {
         })
         .then(responseJson => {
             if (type === 'astronomy') {
-                astronomyData = responseJson;
+                STORE.astronomyData = responseJson;
             }
             if (type === 'hourly') {
-                hourlyData = responseJson;
+                STORE.hourlyData = responseJson;
             }
             if (type === 'observation') {
-                currentConditionsData = responseJson;
+                STORE.currentConditionsData = responseJson;
             }
-            if (astronomyData !== null && hourlyData !== null && currentConditionsData !== null) {
+            if (STORE.astronomyData !== null && STORE.hourlyData !== null && STORE.currentConditionsData !== null) {
                 makeGH();
             }
         })
@@ -194,15 +196,15 @@ function createWeatherQuery(type) {
 
 function makeMap() {
     const params = {
-        key: gKey,
-        q: geoData.items[0].address.label
+        key: STORE.gKey,
+        q: STORE.geoData.items[0].address.label
     }
-    if (geoData.items[0].resultType === 'locality') {
-        params.q = `${geoData.items[0].position.lat},${geoData.items[0].position.lng}`;
+    if (STORE.geoData.items[0].resultType === 'locality') {
+        params.q = `${STORE.geoData.items[0].position.lat},${STORE.geoData.items[0].position.lng}`;
     }
     const queryString = formatQueryParams(params);
-    const mapUrl = mapBase + '?' + queryString;
-    return `<iframe width="800" height="450" frameborder="0" style="border:0" src="${mapUrl}" allowfullscreen></iframe>`;
+    const mapUrl = STORE.mapBase + '?' + queryString;
+    return `<iframe width="800" height="450" style="border:0" src="${mapUrl}" allowfullscreen></iframe>`;
 }
 
 // Display restaurant and hotel lists with generated HTML.
@@ -221,13 +223,13 @@ function displayHotelList(hotelListHTML) {
 
 function makeRestList() {
     let restListHTML = '<h3>Nearest Restaurants</h3>';
-    if (restData.items.length === 0) {
+    if (STORE.restData.items.length === 0) {
         restListHTML += '<p>No restaurants found</p>';
     }
     else {
         restListHTML += '<ol>';
-        for (let i = 0; i < restData.items.length; i++) {
-            restListHTML += `<li><a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(restData.items[i].address.label)}" target="_blank">${restData.items[i].address.label}</a></li><br>`
+        for (let i = 0; i < STORE.restData.items.length; i++) {
+            restListHTML += `<li><a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(STORE.restData.items[i].address.label)}" target="_blank">${STORE.restData.items[i].address.label}</a><br><br></li>`
         }
         restListHTML += '</ol>';
     }
@@ -236,13 +238,13 @@ function makeRestList() {
 
 function makeHotelList() {
     let hotelListHTML = '<h3>Nearest Hotels</h3>';
-    if (hotelData.items.length === 0) {
+    if (STORE.hotelData.items.length === 0) {
         hotelListHTML += '<p>No hotels found</p>';
     }
     else {
         hotelListHTML += '<ol>'
-        for (let i = 0; i < hotelData.items.length; i++) {
-            hotelListHTML += `<li><a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(hotelData.items[i].address.label)}" target="_blank">${hotelData.items[i].address.label}</a></li><br>`
+        for (let i = 0; i < STORE.hotelData.items.length; i++) {
+            hotelListHTML += `<li><a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(STORE.hotelData.items[i].address.label)}" target="_blank">${STORE.hotelData.items[i].address.label}</a><br><br></li>`
         }
         hotelListHTML += '</ol>';
     }
@@ -252,14 +254,14 @@ function makeHotelList() {
 // Generate HTML for current weather conditions.
 
 function makeCurrentConditions() {
-    const observation = currentConditionsData.observations.location[0].observation[0];
+    const observation = STORE.currentConditionsData.observations.location[0].observation[0];
     const iconFilename = observation.iconLink.substring(observation.iconLink.lastIndexOf('/') + 1);
     return `<p>${observation.description} Temp: ${parseInt(observation.temperature, 10)}&deg;F. Wind ${observation.windDescShort} at ${parseInt(observation.windSpeed, 10)} mph.<br><img src="./images/weather-icons/${iconFilename}" alt="${observation.iconName}">`;
 }
 
 function getForecastIndex(forecastTime) {
-    for (let i = 0; i < hourlyData.hourlyForecasts.forecastLocation.forecast.length; i++) {
-        if (hourlyData.hourlyForecasts.forecastLocation.forecast[i].localTime === forecastTime) {
+    for (let i = 0; i < STORE.hourlyData.hourlyForecasts.forecastLocation.forecast.length; i++) {
+        if (STORE.hourlyData.hourlyForecasts.forecastLocation.forecast[i].localTime === forecastTime) {
             return i;
         }
     }
@@ -285,7 +287,7 @@ function getForecast(hour, utcTime) {
         return 'No Forecast data available'
     }
     else {
-        return [hourlyData.hourlyForecasts.forecastLocation.forecast[forecastIndex - 1], hourlyData.hourlyForecasts.forecastLocation.forecast[forecastIndex], hourlyData.hourlyForecasts.forecastLocation.forecast[forecastIndex + 1]];
+        return [STORE.hourlyData.hourlyForecasts.forecastLocation.forecast[forecastIndex - 1], STORE.hourlyData.hourlyForecasts.forecastLocation.forecast[forecastIndex], STORE.hourlyData.hourlyForecasts.forecastLocation.forecast[forecastIndex + 1]];
     }
 }
 
@@ -415,7 +417,7 @@ function createForecast(fcast) {
 
 function displayHours(hoursHTML) {
     if ($('.js-results').text().length === 0) {
-        $('.js-results-loc').html(`<h2>Displaying results for ${geoData.items[0].address.label}</h2>${makeMap()}<h3>Current Conditions</h3>${makeCurrentConditions()}`).show('slow');
+        $('.js-results-loc').html(`<h2>Displaying results for ${STORE.geoData.items[0].address.label}</h2>${makeMap()}<h3>Current Conditions</h3>${makeCurrentConditions()}`).show('slow');
     }
     $('.js-results').append(hoursHTML);
     $('.js-results, .js-button-container, #js-loc-refine').show('slow').removeClass('hidden');
@@ -425,9 +427,9 @@ function displayHours(hoursHTML) {
 // Generate HTML for each forecast day.
 
 function makeGH(day = 0) {
-    const sunrise = astronomyData.astronomy.astronomy[day].sunrise;
-    const sunset = astronomyData.astronomy.astronomy[day].sunset;
-    const utcTime = astronomyData.astronomy.astronomy[day].utcTime;
+    const sunrise = STORE.astronomyData.astronomy.astronomy[day].sunrise;
+    const sunset = STORE.astronomyData.astronomy.astronomy[day].sunset;
+    const utcTime = STORE.astronomyData.astronomy.astronomy[day].utcTime;
     const sunriseHour = getHour(sunrise);
     const sunsetHour = getHour(sunset);
     const date = parseDate(utcTime);
@@ -493,11 +495,11 @@ function watchNewLoc() {
         event.preventDefault();
         $('.title').hide('slow');
         $('.start-screen').css('margin', '20px auto');
-        geoData = null;
-        astronomyData = null;
-        hourlyData = null;
-        restData = null;
-        hotelData = null;
+        STORE.geoData = null;
+        STORE.astronomyData = null;
+        STORE.hourlyData = null;
+        STORE.restData = null;
+        STORE.hotelData = null;
         $('.js-results, .js-results-loc, .js-rest-list, .js-hotel-list, #js-error-message').hide('slow').empty();
         $('#js-7day-button').removeAttr('disabled');
         const location = $('#js-location').val().trim();
@@ -520,7 +522,7 @@ function watch7Days() {
     $('.js-button-container').on('click', '#js-7day-button', event => {
         event.preventDefault();
         if ($('#day-1').text().length === 0) {
-            for (let i = 1; i < astronomyData.astronomy.astronomy.length; i++) {
+            for (let i = 1; i < STORE.astronomyData.astronomy.astronomy.length; i++) {
                 makeGH(i);
             }
 
