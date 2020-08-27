@@ -140,7 +140,9 @@ function createGeoWeatherQuery(loc) {
                 createWeatherQuery('hourly');
                 createWeatherQuery('observation');
             }
-            throw new Error('Please enter a valid location.');
+            else {
+                throw new Error('Please enter a valid location.');
+            }
         })
         .catch(error => {
             $('#js-error-message').text(`Something went wrong: ${error.message}`).show('slow');
