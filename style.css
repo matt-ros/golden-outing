@@ -34,8 +34,14 @@ body {
   background: rgba(255,255,255,0.6);
 }
 
+.results {
+  width: 100vw;
+  margin: 0;
+  padding: 0;
+}
+
 .day {
-  width: 100%;
+  width: 100vw;
   margin: 20px auto;
   border-radius: 10px;
   padding: 5px;
@@ -49,6 +55,9 @@ h1 {
 
 input[name='location'] {
   width: 20em;
+  max-width: 90%;
+  margin-top: 10px;
+  font-size: 15px;
 }
 
 .pad {
@@ -74,7 +83,7 @@ button {
 button, input[type='submit'] {
   background: #F04902;
   color: black;
-  font-size: 18px;
+  font-size: 16px;
   border-radius: 10px;
   margin: 10px;
   -webkit-appearance: none;
@@ -124,13 +133,17 @@ table, th, td {
 }
 
 th {
-  font-size: 20px;
+  font-size: 18px;
   font-weight: normal;
 }
 
 th[colspan='3'] {
-  font-size: 22px;
+  font-size: 20px;
   font-weight: bold;
+}
+
+td {
+  font-size: 13.5px;
 }
 
 td.fcast {
@@ -162,10 +175,6 @@ h3 {
   font-size: 18px;
 }
 
-.search-container h3 {
-  cursor: pointer;
-}
-
 #js-error-message {
   margin: 20px;
 }
@@ -190,6 +199,32 @@ a:active {
   color: orangered;
 }
 
+@media all and (min-width: 420px) {
+  h1 {
+    font-size: 36px;
+  }
+
+  button, input[type='submit'] {
+    font-size: 18px;
+  }
+
+  th[colspan='3'] {
+    font-size: 22px;
+  }
+
+  th {
+    font-size: 20px;
+  }
+
+  td {
+    font-size: 16px;
+  }
+
+  input[name='location'] {
+    font-size: 16px;
+  }
+}
+
 @media all and (min-width: 800px) {
   html {
     background: linear-gradient(
@@ -209,6 +244,8 @@ a:active {
   }
 
   .results {
+    width: 90%;
+    margin: 20px auto;
     background: rgba(255, 255, 255, 0.6);
   }
 
