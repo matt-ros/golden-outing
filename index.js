@@ -72,8 +72,15 @@ function createGeoFromWeather(loc, coord) {
         })
         .then(responseJson => {
             STORE.geoData = responseJson;
-            createWeatherQuery('hourly');
-            createWeatherQuery('observation');
+            if (STORE.geoData.items.length > 0) {
+                createWeatherQuery('hourly');
+                createWeatherQuery('observation');
+                createSearchQuery('restaurant');
+                createSearchQuery('hotel');
+            }
+            else {
+                throw new Error('Please enter a valid location.');
+            }
         })
         .catch(error => {
             $('#js-error-message').text(`Something went wrong: ${error.message}. Please try again.`).show('slow');
@@ -106,11 +113,9 @@ function createSearchQuery(category) {
         .then(responseJson => {
             if (category === 'restaurant') {
                 STORE.restData = responseJson;
-                makeRestList();
             }
             if (category === 'hotel') {
                 STORE.hotelData = responseJson;
-                makeHotelList();
             }
 
         })
@@ -141,6 +146,8 @@ function createGeoWeatherQuery(loc) {
                 createWeatherQuery('astronomy');
                 createWeatherQuery('hourly');
                 createWeatherQuery('observation');
+                createSearchQuery('restaurant');
+                createSearchQuery('hotel');
             }
             else {
                 throw new Error('Please enter a valid location.');
@@ -184,7 +191,7 @@ function createWeatherQuery(type) {
                 STORE.currentConditionsData = responseJson;
             }
             if (STORE.astronomyData !== null && STORE.hourlyData !== null && STORE.currentConditionsData !== null) {
-                makeGH();
+                displayHours();
             }
         })
         .catch(error => {
@@ -209,13 +216,19 @@ function makeMap() {
 
 // Display restaurant and hotel lists with generated HTML.
 
-function displayRestList(restListHTML) {
-    $('.js-rest-list').html(restListHTML).toggle('slow');
+function displayRestList() {
+    if ($('.js-rest-list').text().length === 0) {
+        $('.js-rest-list').html(makeRestList());
+    }
+    $('#rest-list').show('slow');
     $('#rest-list').get(0).scrollIntoView({ behavior: 'smooth' });
 }
 
-function displayHotelList(hotelListHTML) {
-    $('.js-hotel-list').html(hotelListHTML).toggle('slow');
+function displayHotelList() {
+    if ($('.js-hotel-list').text().length === 0) {
+        $('.js-hotel-list').html(makeHotelList());
+    }
+    $('#hotel-list').show('slow');
     $('#hotel-list').get(0).scrollIntoView({ behavior: 'smooth' });
 }
 
@@ -233,7 +246,7 @@ function makeRestList() {
         }
         restListHTML += '</ol>';
     }
-    displayRestList(restListHTML);
+    return restListHTML;
 }
 
 function makeHotelList() {
@@ -248,7 +261,7 @@ function makeHotelList() {
         }
         hotelListHTML += '</ol>';
     }
-    displayHotelList(hotelListHTML);
+    return hotelListHTML;
 }
 
 // Generate HTML for current weather conditions.
@@ -256,7 +269,7 @@ function makeHotelList() {
 function makeCurrentConditions() {
     const observation = STORE.currentConditionsData.observations.location[0].observation[0];
     const iconFilename = observation.iconLink.substring(observation.iconLink.lastIndexOf('/') + 1);
-    return `<p>${observation.description} Temp: ${parseInt(observation.temperature, 10)}&deg;F. Wind ${observation.windDescShort} at ${parseInt(observation.windSpeed, 10)} mph.<br><img src="./images/weather-icons/${iconFilename}" alt="${observation.iconName}">`;
+    return `<h2>Displaying results for ${STORE.geoData.items[0].address.label}</h2>${makeMap()}<h3>Current Conditions</h3><p>${observation.description} Temp: ${parseInt(observation.temperature, 10)}&deg;F. Wind ${observation.windDescShort} at ${parseInt(observation.windSpeed, 10)} mph.<br><img src="./images/weather-icons/${iconFilename}" alt="${observation.iconName}">`;
 }
 
 function getForecastIndex(forecastTime) {
@@ -411,22 +424,45 @@ function createForecast(fcast) {
     return forecastHTML;
 }
 
-// On new location search, display map, current conditions, and today's Golden
-// and Blue hour forecasts. This function is also called to append new days to
-// the forecast data.
+// On new location search, call API query functions to populate data.
 
-function displayHours(hoursHTML) {
-    if ($('.js-results').text().length === 0) {
-        $('.js-results-loc').html(`<h2>Displaying results for ${STORE.geoData.items[0].address.label}</h2>${makeMap()}<h3>Current Conditions</h3>${makeCurrentConditions()}`).show('slow');
+function getData(location) {
+    if (location.length === 5 && $.isNumeric(location)) {
+        createWeatherGeoQuery(location);
     }
-    $('.js-results').append(hoursHTML);
+    else {
+        createGeoWeatherQuery(location);
+    }
+    
+}
+
+// Display generated HTML for Golden/Blue hour times and forecasts for a single
+// day.
+
+function displayHours(day = 0) {
+    if ($('.js-results').text().length === 0) {
+        $('.js-results-loc').html(makeCurrentConditions()).show('slow');
+    }
+    $('.js-results').append(makeGH(day));
     $('.js-results, .js-button-container, #js-loc-refine').show('slow').removeClass('hidden');
     $('.js-button-container').css('display', 'flex');
 }
 
+// Show or hide forecast data as appropriate.
+
+function showHideForecast() {
+    if ($('.js-results').css('display') === 'none') {
+        $('.js-results').show();
+        $('.js-results').get(0).scrollIntoView({ behavior: 'smooth' });
+    }
+    else {
+        $('.js-results').hide('slow');
+    }
+}
+
 // Generate HTML for each forecast day.
 
-function makeGH(day = 0) {
+function makeGH(day) {
     const sunrise = STORE.astronomyData.astronomy.astronomy[day].sunrise;
     const sunset = STORE.astronomyData.astronomy.astronomy[day].sunset;
     const utcTime = STORE.astronomyData.astronomy.astronomy[day].utcTime;
@@ -441,7 +477,7 @@ function makeGH(day = 0) {
     const sunsetForecast = getForecast(sunsetHour, utcTime);
     const sunriseHTML = createForecast(sunriseForecast);
     const sunsetHTML = createForecast(sunsetForecast);
-    const hoursHTML = `<div class="day">
+    return `<div class="day">
         <h3 class="result-item" id="day-${day}">${date}</h3>
         <div class="result-item">
             <table>
@@ -484,7 +520,6 @@ function makeGH(day = 0) {
             </table>
         </div>
         </div>`;
-    displayHours(hoursHTML);
 }
 
 // Event listener for new location search. Clear displayed data and API data
@@ -501,33 +536,31 @@ function watchNewLoc() {
         STORE.restData = null;
         STORE.hotelData = null;
         $('.js-results, .js-results-loc, .js-rest-list, .js-hotel-list, #js-error-message').hide('slow').empty();
-        $('#js-7day-button').removeAttr('disabled');
         const location = $('#js-location').val().trim();
         if (!location) {
             $('#js-error-message').text('Please enter a valid location.').show('fast');
         }
-        else if (location.length === 5 && $.isNumeric(location)) {
-            createWeatherGeoQuery(location);
-        }
         else {
-            createGeoWeatherQuery(location);
+            getData(location);
         }
     });
 }
 
-// Event listener for 7 Day Forecast button. Create forecast if not already
-// displayed and scroll to it.
+// Event listener for 7 Day Forecast button. Create forecast and scroll to it,
+// or if already created, toggle display of the forecast.
 
 function watch7Days() {
     $('.js-button-container').on('click', '#js-7day-button', event => {
         event.preventDefault();
         if ($('#day-1').text().length === 0) {
             for (let i = 1; i < STORE.astronomyData.astronomy.astronomy.length; i++) {
-                makeGH(i);
+                displayHours(i);
             }
-
+            $('#day-0').get(0).scrollIntoView({ behavior: 'smooth' });
         }
-        $('#day-0').get(0).scrollIntoView({ behavior: 'smooth' });
+        else {
+            showHideForecast();
+        }
     });
 }
 
@@ -542,31 +575,19 @@ function watchSuggestion() {
     });
 }
 
-// Event listener for Restaurant button. Query API and generate list if needed,
-// otherwise just scroll to the list.
+// Event listener for Restaurant button.
 
 function watchRestaurants() {
     $('.js-button-container').on('click', '#js-rest-button', event => {
-        if ($('.js-rest-list').text().length === 0) {
-            createSearchQuery('restaurant');
-        }
-        else {
-            $('#rest-list').get(0).scrollIntoView({ behavior: 'smooth' });
-        }
+        displayRestList();
     });
 }
 
-// Event listener for Hotel button. Query API and generate list if needed,
-// otherwise just scroll to the list.
+// Event listener for Hotel button.
 
 function watchHotels() {
     $('.js-button-container').on('click', '#js-hotel-button', event => {
-        if ($('.js-hotel-list').text().length === 0) {
-            createSearchQuery('hotel');
-        }
-        else {
-            $('#hotel-list').get(0).scrollIntoView({ behavior: 'smooth' })
-        }
+        displayHotelList();
     });
 }
 

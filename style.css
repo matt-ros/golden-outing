@@ -57,6 +57,7 @@ input[name='location'] {
   width: 20em;
   max-width: 90%;
   margin-top: 10px;
+  margin-left: 5px;
   font-size: 15px;
 }
 
